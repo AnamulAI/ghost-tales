@@ -121,6 +121,8 @@ body.busy .orb{opacity:1;animation:orb .55s ease-in-out infinite alternate}
 /* toolbar */
 .toolbar{position:fixed;top:10px;right:10px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px)}
 .toolbar button{padding:6px 12px;font-size:.85rem;background:var(--paper)}
+.toolbar label{display:flex;align-items:center;gap:6px;margin:0;background:var(--paper);padding:4px 10px;border-radius:10px;border:1px solid var(--line);font-size:.8rem;color:var(--ink)}
+.toolbar input[type=range]{width:90px;padding:0;accent-color:var(--glow)}
 
 /* intro */
 #intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
@@ -621,6 +623,180 @@ updateVoiceHint();
     document.addEventListener("keydown", e => { if (e.key === "Escape") $("intro").classList.add("gone"); });
   } catch (e) { console.warn("scene events failed", e); }
   try { setMotion(motion); } catch (e) { console.warn(e); }
+})();
+</script>
+<script>
+/* ---------- sound: synthesized with the Web Audio API (no audio files), off by default ---------- */
+(function () {
+  const $ = id => document.getElementById(id);
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if (!AC) return;
+  const KEYS = ["bamboo", "mansion", "ghat", "station", "school"];
+  const MAXG = 0.25;               // master gain is never above this
+  let ctx = null, master = null, fxBus = null, noiseBuf = null;
+  let bed = null, on = false, level = 0.5, offTimer = 0, lastFx = 0;
+
+  function ensure() {
+    if (ctx) return;
+    ctx = new AC();
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -18; comp.knee.value = 20; comp.ratio.value = 8; comp.attack.value = 0.005; comp.release.value = 0.25;
+    master = ctx.createGain(); master.gain.value = 0;
+    master.connect(comp); comp.connect(ctx.destination);
+    fxBus = ctx.createGain(); fxBus.gain.value = 0.8; fxBus.connect(master);
+    const len = ctx.sampleRate * 3;
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+  }
+  function noiseSrc() { const s = ctx.createBufferSource(); s.buffer = noiseBuf; s.loop = true; s.start(0, Math.random() * 2); return s; }
+  function filt(type, f, q) { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; if (q) b.Q.value = q; return b; }
+  function gain(v) { const g = ctx.createGain(); g.gain.value = v; return g; }
+  function chain() { for (let i = 0; i < arguments.length - 1; i++) arguments[i].connect(arguments[i + 1]); }
+
+  /* ---------- ambient beds ---------- */
+  function buildBed(key, mood) {
+    const out = gain(0); out.connect(master);
+    const srcs = [];
+    const mem = mood === "memory";
+    const osc = (type, f, g) => { const o = ctx.createOscillator(); o.type = type; o.frequency.value = f; const gn = gain(g); o.connect(gn); o.start(); srcs.push(o); return gn; };
+    const lfo = (f, depth, param) => { const o = ctx.createOscillator(); o.frequency.value = f; const g = gain(depth); o.connect(g); g.connect(param); o.start(); srcs.push(o); };
+    const noise = () => { const n = noiseSrc(); srcs.push(n); return n; };
+    // low drone (spooky: two close notes that beat slowly; memory: a warmer open interval)
+    const d1 = osc("sine", mem ? 110 : 55, 0.11), d2 = osc("sine", mem ? 165 : 58.3, 0.08);
+    d1.connect(out); d2.connect(out); lfo(0.07, 0.04, d1.gain);
+    const wind = (lv, f) => { const n = noise(), bp = filt("bandpass", f, 0.7), g = gain(lv); chain(n, bp, g, out); lfo(0.09, f * 0.5, bp.frequency); lfo(0.13, lv * 0.6, g.gain); };
+    const cricket = (f, rate, gate, lv) => {
+      const o = ctx.createOscillator(); o.frequency.value = f; srcs.push(o);
+      const a = gain(0.5), b = gain(0.5), l = gain(lv);
+      lfo(rate, 0.5, a.gain); lfo(gate, 0.5, b.gain);
+      chain(o, a, b, l, out); o.start();
+    };
+    if (key === "bamboo") { wind(0.5, 500); cricket(4300, 27, 0.35, 0.03); cricket(4700, 31, 0.27, 0.024); }
+    else if (key === "mansion") { wind(0.35, 350); cricket(4200, 26, 0.3, 0.018); }
+    else if (key === "ghat") {
+      const n = noise(), g = gain(0.45); chain(n, filt("lowpass", 1200), filt("highpass", 200), g, out); lfo(0.17, 0.15, g.gain);
+      wind(0.25, 400);
+    } else if (key === "station") {
+      const n = noise(), g = gain(2.0); chain(n, filt("lowpass", 110), g, out); lfo(0.08, 0.5, g.gain);
+      const c = noise(), cg = gain(0.4); chain(c, filt("lowpass", 300), cg, out); lfo(2.6, 0.4, cg.gain);
+      wind(0.3, 450);
+    } else { // school: light rain
+      const n = noise(), g = gain(0.15); chain(n, filt("highpass", 1800), filt("lowpass", 7000), g, out);
+      const m = noise(), mg = gain(0.12); chain(m, filt("bandpass", 900, 0.8), mg, out);
+      wind(0.2, 450);
+    }
+    return { out, srcs };
+  }
+  function stopBed(b) { if (!b) return; setTimeout(() => b.srcs.forEach(s => { try { s.stop(); } catch (e) {} }), 2500); b.out.gain.setTargetAtTime(0, ctx.currentTime, 0.5); }
+  function setBed() {
+    if (!on || !ctx) return;
+    const old = bed;
+    const i = $("setting").selectedIndex;
+    bed = buildBed(KEYS[i < 0 ? 0 : i] || "bamboo", $("mood").value);
+    bed.out.gain.setTargetAtTime(1, ctx.currentTime, 0.8);
+    stopBed(old);
+  }
+
+  /* ---------- keyword effects (short and quiet) ---------- */
+  const rand = (a, b) => a + Math.random() * (b - a);
+  function env(g, t, a, peak, d) { g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(peak, t + a); g.gain.exponentialRampToValueAtTime(0.0001, t + a + d); }
+  function noiseHit(t, dur, nodes, g) { const n = noiseSrc(); chain.apply(null, [n].concat(nodes, [g, fxBus])); n.stop(t + dur); }
+  function tone(t, type, f0, f1, dur, peak, a) {
+    const o = ctx.createOscillator(), g = gain(0.0001); o.type = type;
+    o.frequency.setValueAtTime(f0, t); o.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    env(g, t, a, peak, dur); chain(o, g, fxBus); o.start(t); o.stop(t + dur + a + 0.05);
+  }
+  const FX = {
+    wind(t) { const bp = filt("bandpass", 350, 1.2), g = gain(0.0001); bp.frequency.setValueAtTime(350, t); bp.frequency.linearRampToValueAtTime(900, t + 1.0); bp.frequency.linearRampToValueAtTime(450, t + 2.2); env(g, t, 0.8, 0.9, 1.4); noiseHit(t, 2.4, [bp], g); },
+    whisper(t) {
+      for (const f of [2600, 3700]) {
+        const bp = filt("bandpass", f, 4), g = gain(0.0001); g.gain.setValueAtTime(0.0001, t);
+        for (let k = 0; k < 7; k++) { const tt = t + k * 0.22; g.gain.linearRampToValueAtTime(rand(0.15, 0.4), tt + 0.07); g.gain.linearRampToValueAtTime(0.03, tt + 0.2); }
+        g.gain.linearRampToValueAtTime(0.0001, t + 1.7); noiseHit(t, 1.8, [bp], g);
+      }
+    },
+    knock(t) { for (let k = 0; k < 3; k++) { const tt = t + k * 0.22; tone(tt, "sine", 190, 90, 0.12, 0.5, 0.004); const g = gain(0.0001); env(g, tt, 0.003, 0.18, 0.05); noiseHit(tt, 0.1, [filt("lowpass", 900)], g); } },
+    steps(t) { for (let k = 0; k < 4; k++) { const tt = t + k * 0.5; tone(tt, "sine", 95, 50, 0.14, 0.32, 0.01); const g = gain(0.0001); env(g, tt, 0.01, 0.12, 0.09); noiseHit(tt, 0.2, [filt("lowpass", 350)], g); } },
+    birds(t) { for (let k = 0; k < 4; k++) { const tt = t + k * 0.17 + rand(0, 0.05), f = rand(2600, 3300); tone(tt, "sine", f, f + 900, 0.07, 0.14, 0.01); } },
+    owl(t) { tone(t, "sine", 430, 390, 0.35, 0.22, 0.06); tone(t + 0.6, "sine", 430, 380, 0.45, 0.22, 0.06); },
+    cold(t) { const g = gain(0.0001); env(g, t, 0.9, 0.35, 1.1); noiseHit(t, 2.2, [filt("highpass", 1800), filt("lowpass", 6000)], g); },
+    creak(t) {
+      const o = ctx.createOscillator(), bp = filt("bandpass", 450, 5), g = gain(0.0001); o.type = "sawtooth";
+      o.frequency.setValueAtTime(160, t); o.frequency.linearRampToValueAtTime(80, t + 0.5); o.frequency.linearRampToValueAtTime(150, t + 1.1);
+      env(g, t, 0.1, 0.22, 1.0); chain(o, bp, g, fxBus); o.start(t); o.stop(t + 1.3);
+    },
+    bell(t) { [[1, 0.5], [2.76, 0.25], [5.4, 0.12], [8.93, 0.06]].forEach(p => { const o = ctx.createOscillator(), g = gain(0.0001); o.frequency.value = 392 * p[0]; env(g, t, 0.005, p[1] * 0.45, 3.5 / Math.sqrt(p[0])); chain(o, g, fxBus); o.start(t); o.stop(t + 4); }); },
+    heart(t) { for (let k = 0; k < 3; k++) { const b = t + k * 0.9; tone(b, "sine", 62, 40, 0.14, 0.7, 0.01); tone(b + 0.2, "sine", 58, 38, 0.14, 0.5, 0.01); } },
+    thunder(t) { const lp = filt("lowpass", 220), g = gain(0.0001); lp.frequency.setValueAtTime(220, t); lp.frequency.exponentialRampToValueAtTime(90, t + 3); env(g, t, 0.5, 1.2, 3.0); noiseHit(t, 3.6, [lp], g); }
+  };
+  const RULES = [
+    [/\bsuddenly\b/, "thunder"],
+    [/\b(wind|breeze|gusts?|blew|blows|blowing)\b/, "wind"],
+    [/\b(whisper\w*|voices?|murmur\w*|hush\w*|echo\w*)\b/, "whisper"],
+    [/\b(footsteps?|steps?|walk\w*)\b/, "steps"],
+    [/\b(knock\w*|tap\w*)\b/, "knock"],
+    [/\bowl\b/, "owl"],
+    [/\b(birds?|crows?|chirp\w*)\b/, "birds"],
+    [/\b(cold|chill\w*|breath\w*|icy|freez\w*)\b/, "cold"],
+    [/\b(creak\w*|door|hinge)\b/, "creak"],
+    [/\b(bells?|chime\w*|ring\w*)\b/, "bell"],
+    [/\b(heart\w*|fear\w*|afraid|dread\w*|shadows?|watch\w*|heavy|silen\w*|frozen|trembl\w*)\b/, "heart"]
+  ];
+  function trigger(text) {
+    if (!on || !ctx || ctx.state !== "running" || document.hidden) return;
+    const now = performance.now(); if (now - lastFx < 700) return; lastFx = now;
+    const s = (text || "").toLowerCase(), hits = [];
+    for (const r of RULES) if (r[0].test(s)) hits.push(r[1]);
+    let t = ctx.currentTime + 0.05;
+    hits.slice(0, 2).forEach(name => { try { FX[name](t); } catch (e) { console.warn("fx failed", name, e); } t += 0.4; });
+  }
+
+  /* ---------- on / off, volume ---------- */
+  function target() { return level * MAXG; }
+  function setOn(v) {
+    const b = $("soundbtn");
+    if (v) {
+      ensure(); clearTimeout(offTimer); on = true;
+      ctx.resume();
+      const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(target(), t + 1.5);
+      if (!bed) setBed();
+    } else if (ctx) {
+      on = false;
+      const t = ctx.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value, t); master.gain.linearRampToValueAtTime(0, t + 0.8);
+      offTimer = setTimeout(() => { stopBed(bed); bed = null; setTimeout(() => { if (!on) ctx.suspend(); }, 2600); }, 900);
+    }
+    on = !!v;
+    b.setAttribute("aria-pressed", String(!!v)); b.textContent = "Sound: " + (v ? "on" : "off");
+  }
+
+  try {
+    const tb = document.querySelector(".toolbar");
+    const lab = document.createElement("label");
+    lab.setAttribute("for", "vol"); lab.innerHTML = "Volume ";
+    const vol = document.createElement("input");
+    vol.type = "range"; vol.id = "vol"; vol.min = "0"; vol.max = "100"; vol.value = "50"; vol.setAttribute("aria-label", "Volume");
+    lab.appendChild(vol);
+    const sb = document.createElement("button");
+    sb.id = "soundbtn"; sb.type = "button"; sb.setAttribute("aria-pressed", "false"); sb.setAttribute("aria-label", "Toggle sound"); sb.textContent = "Sound: off";
+    tb.insertBefore(sb, tb.firstChild); tb.insertBefore(lab, $("motionbtn"));
+    sb.addEventListener("click", () => { try { setOn(!on); } catch (e) { console.warn("sound failed", e); } });
+    vol.addEventListener("input", () => { level = vol.value / 100; if (ctx && on) master.gain.setTargetAtTime(target(), ctx.currentTime, 0.1); });
+    $("setting").addEventListener("change", () => { try { setBed(); } catch (e) { console.warn(e); } });
+    $("mood").addEventListener("change", () => { try { setBed(); } catch (e) { console.warn(e); } });
+    // clicking the lantern unlocks audio for later, without starting any sound
+    $("light").addEventListener("click", () => { try { ensure(); ctx.suspend(); } catch (e) {} });
+    document.addEventListener("visibilitychange", () => { try { if (!ctx) return; if (document.hidden) ctx.suspend(); else if (on) ctx.resume(); } catch (e) {} });
+    // effects follow the sentence that is highlighted (reading aloud or clicking a sentence)
+    new MutationObserver(ms => {
+      for (const m of ms) {
+        const el = m.target;
+        if (el.classList && el.classList.contains("sent") && el.classList.contains("hl") && !(m.oldValue || "").split(" ").includes("hl")) {
+          const en = el.querySelector(".en"); try { trigger(en && en.textContent); } catch (e) {}
+        }
+      }
+    }).observe($("rows"), { subtree: true, attributes: true, attributeFilter: ["class"], attributeOldValue: true });
+  } catch (e) { console.warn("sound init failed", e); }
 })();
 </script>
 </body>

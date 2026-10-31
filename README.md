@@ -29,6 +29,17 @@ Bengali speakers who want to practice English with stories they actually enjoy, 
 - Step 1 writes the story in English (`/api/generate`). Step 2 translates each sentence into Bengali with a separate low-temperature request, which keeps small models more accurate than translating a whole story at once.
 - "Listen" uses the browser's built-in speech synthesis. Bengali audio appears only if the computer has a Bengali voice installed.
 
+## Design
+
+The page is a haunted storybook by lamplight. All of it is drawn and synthesized in the file itself, with no external fonts, images, audio or scripts.
+
+- A layered scene with depth: moon and stars, silhouettes that change with the setting (bamboo grove, old mansion, river ghat, railway station, village school), foreground grass, and drifting fog. The layers move with the pointer (parallax, rotation limited to about 4 degrees).
+- The mood changes the whole palette: deep indigo and teal with fireflies for "spooky", warm amber with floating marigold petals for "a memory ghost".
+- Story cards rise in one after another, tilt slightly under the pointer, and the sentence being read aloud glows like candlelight.
+- Sound is synthesized with the Web Audio API: an ambient bed for each setting, and short effects triggered by words in the sentence being read (wind, whispers, footsteps, a bell, a heartbeat and so on). It is **off by default**, has a volume slider, and never starts before a click.
+- Respects `prefers-reduced-motion`, and has a visible **Motion on/off** toggle. Particles are capped at 36 (plus 6 fog blobs) and the animation slows to about 30 fps while the model is working.
+- `index.stable.html` is the earlier plain version of the page, kept as a fallback.
+
 ## Known limits
 
 - Small models can make mistakes in Bengali. Review translations before relying on them for study.
