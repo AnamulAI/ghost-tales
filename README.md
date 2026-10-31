@@ -41,3 +41,15 @@ Developed during the Hacktoberfest 2026 Week 4 challenge window, with AI help fo
 ## License
 
 MIT
+
+## Measured on
+
+Apple M4 Mac, 16 GB RAM, `gemma4:12b` (7.7 GB) through local Ollama, `think: false`. Three test stories (see [sample-stories.md](sample-stories.md)):
+
+| Story | English story | Bengali (all sentences) | Whole story |
+|---|---|---|---|
+| Bamboo grove, spooky (12 sentences) | 15.4 s | 15.1 s | 30.5 s |
+| Old mansion, memory ghost (13 sentences) | 10.3 s | 15.2 s | 25.5 s |
+| Railway station, spooky (12 sentences) | 9.3 s | 13.7 s | 23.0 s |
+
+Translating one sentence took about 1.1 to 1.3 s on average (0.74 to 2.04 s range). With thinking switched on, one sentence took about 25 s in earlier manual testing.
