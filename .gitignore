@@ -6,3 +6,8 @@ node_modules/
 *.old.html
 *.old.md
 devto-post.md
+media/
+*.mp3
+*.mp4
+*.mov
+*.wav
