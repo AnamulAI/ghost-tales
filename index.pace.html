@@ -678,10 +678,11 @@ async function playCard(s, i, last, run) {
     const nm = !row || row.classList.contains("plain");
     if (nm) { await rw(dur); }
     else {
-      let acc = 0;
+      let acc = 0, lastT = performance.now();
       while (acc < n && !cur.skip && !ffReveal && run === revealRun) {
         await rwait(30);
-        acc += n * 30 / dur;
+        const t = performance.now(), dt = Math.max(30, t - lastT); lastT = t;   // real elapsed time, so a throttled background tab does not slow the story
+        acc += n * dt / dur;
         paintTyped(row, chars, Math.min(n, Math.floor(acc)));
       }
     }
@@ -815,7 +816,7 @@ async function generate() {
   }
 }
 
-/* ---------- speech (browser built-in, works offline if voices are installed) ---------- */
+/* ---------- speech (browser built-in voices) ---------- */
 function voiceFor(prefix) {
   return (window.speechSynthesis ? speechSynthesis.getVoices() : []).find(v => v.lang.toLowerCase().startsWith(prefix));
 }
