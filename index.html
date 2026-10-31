@@ -5,46 +5,217 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ghost Tales | ভূতের কথা</title>
 <style>
-:root{--bg:#0e0b12;--card:#17121f;--ink:#efe6d8;--muted:#a79bb5;--glow:#f2a93b;--line:#2b2236;--ok:#7bd88f;--bad:#ff7b7b;--hl:#3a2a12}
+@property --sky1{syntax:"<color>";inherits:true;initial-value:#070b1d}
+@property --sky2{syntax:"<color>";inherits:true;initial-value:#0e4552}
+@property --glow{syntax:"<color>";inherits:true;initial-value:#7fe0d0}
+@property --sil{syntax:"<color>";inherits:true;initial-value:#03060e}
+@property --moon{syntax:"<color>";inherits:true;initial-value:#e9f3f7}
+@property --paper{syntax:"<color>";inherits:true;initial-value:#0a1325d9}
+@property --line{syntax:"<color>";inherits:true;initial-value:#28455a}
+@property --ink{syntax:"<color>";inherits:true;initial-value:#e8eff3}
+@property --muted{syntax:"<color>";inherits:true;initial-value:#9fb4c2}
+@property --hl{syntax:"<color>";inherits:true;initial-value:#123049}
 *{box-sizing:border-box}
-body{margin:0;min-height:100vh;color:var(--ink);line-height:1.8;
-  background:radial-gradient(1100px 600px at 50% -10%,#2a1d3b 0,var(--bg) 62%);
+html{background:#070b1d}
+body{--sky1:#070b1d;--sky2:#0e4552;--glow:#7fe0d0;--sil:#03060e;--moon:#e9f3f7;--paper:#0a1325d9;--line:#28455a;--ink:#e8eff3;--muted:#9fb4c2;--hl:#123049;
+  --ok:#7bd88f;--bad:#ff8a8a;
+  transition:--sky1 1.6s,--sky2 1.6s,--glow 1.6s,--sil 1.6s,--moon 1.6s,--paper 1.6s,--line 1.6s,--ink 1.6s,--muted 1.6s,--hl 1.6s;
+  margin:0;min-height:100vh;color:var(--ink);line-height:1.8;overflow-x:hidden;
   font-family:"Kohinoor Bangla","Bangla Sangam MN","Noto Sans Bengali",system-ui,sans-serif}
-.wrap{max-width:820px;margin:0 auto;padding:26px 16px 60px}
-h1{font-size:2rem;margin:.2em 0 0}
+body[data-mood="memory"]{--sky1:#2b1005;--sky2:#a2491a;--glow:#ffb42e;--sil:#1b0b05;--moon:#ffd98a;--paper:#2a1409d9;--line:#6b3a18;--ink:#fdeed8;--muted:#d6b592;--hl:#4a2a0c}
+
+/* ---------- scene ---------- */
+#scene{position:fixed;inset:0;z-index:0;overflow:hidden;perspective:1100px;background:linear-gradient(to top,var(--sky2) 0%,var(--sky1) 72%)}
+.stage{position:absolute;inset:0;transform-style:preserve-3d;will-change:transform}
+.layer{position:absolute;inset:-8%;will-change:transform;pointer-events:none}
+.moon{position:absolute;top:13%;right:16%;width:min(24vw,230px);aspect-ratio:1;border-radius:50%;
+  background:radial-gradient(circle at 38% 38%,#fff 0,var(--moon) 48%,transparent 74%);box-shadow:0 0 90px 26px rgba(255,255,255,.14)}
+#stars{position:absolute;inset:0;width:100%;height:100%}
+#stars circle{fill:var(--moon);animation:tw 4s ease-in-out infinite alternate}
+@keyframes tw{from{opacity:.25}to{opacity:.9}}
+.mid svg,.near svg{position:absolute;left:0;bottom:0;width:100%;height:55%}
+.near svg{height:30%}
+.sil{fill:var(--sil);opacity:0;transition:opacity 1.2s}
+body[data-setting="bamboo"] #sc-bamboo,body[data-setting="mansion"] #sc-mansion,body[data-setting="ghat"] #sc-ghat,
+body[data-setting="station"] #sc-station,body[data-setting="school"] #sc-school{opacity:1}
+.win{fill:var(--glow);opacity:.75;animation:win 3s ease-in-out infinite alternate}
+@keyframes win{from{opacity:.45}to{opacity:.85}}
+.water{stroke:var(--moon);stroke-opacity:.25;fill:none;stroke-width:2}
+#grass path{fill:var(--sil)}
+#grass g{transform-origin:50% 100%;animation:sway 5s ease-in-out infinite alternate}
+#grass g:nth-child(2){animation-duration:6.5s;animation-delay:-2s}
+#grass g:nth-child(3){animation-duration:4.2s;animation-delay:-1s}
+@keyframes sway{from{transform:rotate(-1.2deg)}to{transform:rotate(1.4deg)}}
+#fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.vignette{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 50% 55%,transparent 45%,rgba(0,0,0,.55) 100%)}
+.lampglow{position:absolute;left:-6vw;top:-10vh;width:60vw;height:60vh;pointer-events:none;
+  background:radial-gradient(circle at 30% 30%,rgba(255,190,90,.20),transparent 60%);animation:lamp 2.6s ease-in-out infinite alternate}
+@keyframes lamp{0%{opacity:.7}35%{opacity:1}60%{opacity:.8}100%{opacity:.95}}
+body.nomotion #fx{display:none}
+
+/* ---------- page ---------- */
+.wrap{position:relative;z-index:2;max-width:880px;margin:0 auto;padding:22px 16px 70px}
+.head{display:flex;align-items:center;gap:14px}
+.lantern{width:46px;height:76px;color:#6b5230;flex:none;filter:drop-shadow(0 0 10px var(--glow));animation:flick 2.4s ease-in-out infinite alternate}
+@keyframes flick{0%{opacity:.8}30%{opacity:1}55%{opacity:.88}100%{opacity:.97}}
+h1{font-family:Georgia,"Kohinoor Bangla","Times New Roman",serif;font-size:2.4rem;line-height:1.15;margin:0;color:var(--ink);text-shadow:0 2px 14px rgba(0,0,0,.6)}
 h1 span{color:var(--glow)}
-.sub{color:var(--muted);margin:.2em 0 1em}
-.badge{display:inline-block;padding:2px 12px;border:1px solid var(--line);border-radius:99px;font-size:.85rem;color:var(--muted)}
-.badge.ok{color:var(--ok);border-color:#2f5a3a}
-.badge.bad{color:var(--bad);border-color:#5a2f2f}
-.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
-.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-@media(max-width:560px){.grid{grid-template-columns:1fr}}
-label{display:block;font-size:.88rem;color:var(--muted);margin-bottom:4px}
-select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#100c17;color:var(--ink);font:inherit}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
-button{cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;background:#2b2236;color:var(--ink)}
-#go{background:var(--glow);color:#1b1206}
-button:disabled{opacity:.5;cursor:not-allowed}
+h1 small{display:block;font-size:.5em;color:var(--muted);font-family:"Kohinoor Bangla","Bangla Sangam MN","Noto Sans Bengali",system-ui,sans-serif}
+.sub{color:var(--ink);margin:.6em 0 .8em;text-shadow:0 1px 8px rgba(0,0,0,.7)}
 .hint{color:var(--muted);font-size:.86rem}
+.sub .hint{display:inline-block;background:#0000004d;border-radius:6px;padding:0 6px}
+.badge{display:inline-block;padding:2px 12px;border:1px solid var(--line);border-radius:99px;font-size:.85rem;color:var(--muted);background:var(--paper)}
+.badge.ok{color:var(--ok);border-color:#2f5a3a}
+.badge.bad{color:var(--bad);border-color:#7a3a3a}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:18px;padding:18px;margin:16px 0;box-shadow:0 14px 40px rgba(0,0,0,.35)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}h1{font-size:1.9rem}}
+label{display:block;font-size:.88rem;color:var(--muted);margin-bottom:4px}
+select,input[type=text],input:not([type]){width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#0000003d;color:var(--ink);font:inherit}
+select option{color:#111}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+button{cursor:pointer;border:1px solid var(--line);border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;background:#ffffff14;color:var(--ink);transition:background .2s,transform .15s}
+button:hover:not(:disabled){background:#ffffff26;transform:translateY(-1px)}
+#go{background:var(--glow);color:#10100a;border-color:transparent}
+#go:hover:not(:disabled){background:var(--glow);filter:brightness(1.1)}
+button:disabled{opacity:.5;cursor:not-allowed}
+:focus-visible{outline:3px solid var(--glow);outline-offset:2px}
 .chk{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:.9rem}
 .chk input{width:auto}
-.sent{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:12px;border-radius:12px;border:1px solid transparent;cursor:pointer}
+
+/* progress + flame orb */
+.prog{display:flex;align-items:center;gap:10px;min-height:1.8em}
+#progress{color:var(--muted);font-size:.92rem}
+.orb{flex:none;width:14px;height:20px;border-radius:50% 50% 50% 50%/62% 62% 38% 38%;
+  background:radial-gradient(circle at 50% 70%,#fff6c8,var(--glow) 55%,transparent 72%);box-shadow:0 0 12px var(--glow);opacity:.35}
+body.busy .orb{opacity:1;animation:orb .55s ease-in-out infinite alternate}
+@keyframes orb{from{transform:scale(.85,.9) rotate(-4deg)}to{transform:scale(1.1,1.15) rotate(4deg)}}
+
+/* story cards */
+#rows{perspective:1200px}
+.sent{position:relative;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px 16px;margin:10px 0;cursor:pointer;
+  background:#ffffff0a;border:1px solid transparent;border-radius:14px;
+  transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));
+  transition:transform .18s ease-out,background .4s,border-color .4s;
+  animation:rise .75s cubic-bezier(.2,.7,.2,1) both;animation-delay:calc(var(--i,0)*.12s)}
+.sent:nth-child(2){--i:1}.sent:nth-child(3){--i:2}.sent:nth-child(4){--i:3}.sent:nth-child(5){--i:4}.sent:nth-child(6){--i:5}
+.sent:nth-child(7){--i:6}.sent:nth-child(8){--i:7}.sent:nth-child(9){--i:8}.sent:nth-child(10){--i:9}.sent:nth-child(11){--i:10}
+.sent:nth-child(12){--i:11}.sent:nth-child(13){--i:12}.sent:nth-child(14){--i:13}.sent:nth-child(15){--i:14}.sent:nth-child(16){--i:15}
+@keyframes rise{from{opacity:0;translate:0 26px;scale:.97}to{opacity:1;translate:0 0;scale:1}}
+@keyframes ink{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.sent .en,.sent .bn{animation:ink 1s ease-out both;animation-delay:calc(var(--i,0)*.12s + .25s)}
 @media(max-width:560px){.sent{grid-template-columns:1fr}}
-.sent+.sent{margin-top:6px}
-.sent.hl{background:var(--hl);border-color:#6b4a1c}
-.en{font-size:1.02rem}
-.bn{font-size:1.12rem;color:#ffe3b0}
-.bn.wait{color:var(--muted);font-size:.9rem}
+.sent:hover{background:#ffffff14;border-color:var(--line)}
+.sent::after{content:"";position:absolute;inset:-2px;border-radius:16px;pointer-events:none;opacity:0;transition:opacity .4s;
+  box-shadow:0 0 30px 4px var(--glow),inset 0 0 26px #ffb42e33}
+.sent.hl{background:var(--hl);border-color:var(--glow)}
+.sent.hl::after{opacity:.55;animation:candle 1.4s ease-in-out infinite alternate}
+@keyframes candle{0%{opacity:.35}40%{opacity:.7}70%{opacity:.5}100%{opacity:.62}}
+.en{font-size:1.1rem}
+.bn{font-size:1.18rem;color:var(--glow)}
+.bn.wait{color:var(--muted);font-size:.92rem}
+.learn .en{transition:filter .3s}
 .learn .en:not(.show){filter:blur(7px)}
-#progress{color:var(--muted);font-size:.9rem;min-height:1.4em}
-.flame{display:inline-block;animation:fl 1.6s infinite alternate}
-@keyframes fl{from{opacity:.55}to{opacity:1}}
+.foot{color:var(--muted);font-size:.86rem;background:#00000040;border-radius:12px;padding:10px 14px}
+
+/* toolbar */
+.toolbar{position:fixed;top:10px;right:10px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px)}
+.toolbar button{padding:6px 12px;font-size:.85rem;background:var(--paper)}
+
+/* intro */
+#intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
+  background:radial-gradient(circle at 50% 40%,#1a1630f2,#05070ffa);transition:opacity .9s,visibility .9s}
+#intro.gone{opacity:0;visibility:hidden;pointer-events:none}
+.intro-in{max-width:460px}
+.intro-in .lantern{width:92px;height:150px;margin:0 auto 6px;display:block}
+.intro-in h2{font-family:Georgia,"Kohinoor Bangla",serif;font-size:2.4rem;margin:.1em 0;color:#f4ead8}
+.intro-in p{color:#cdbfdc;margin:.2em 0 1em}
+#light{font-size:1.1rem;padding:12px 24px;background:#ffb42e;color:#1b1206;border:0}
+.linkish{background:none;border:0;color:#cdbfdc;text-decoration:underline;font-weight:400;margin-top:10px}
+
+body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!important;transition:none!important}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#fx{display:none}}
 </style>
 </head>
-<body>
-<div class="wrap">
-  <h1><span class="flame">🕯️</span> Ghost <span>Tales</span> <small style="font-size:.5em;color:var(--muted)">ভূতের কথা</small></h1>
+<body data-mood="spooky" data-setting="bamboo">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <symbol id="lantern" viewBox="0 0 60 100">
+    <path d="M30 3v11" stroke="currentColor" stroke-width="3" fill="none"/>
+    <path d="M13 25 22 14h16l9 11z" fill="#2a2018"/>
+    <rect x="16" y="25" width="28" height="48" rx="5" fill="#ffcf70" fill-opacity=".2" stroke="#6b5230" stroke-width="3"/>
+    <ellipse cx="30" cy="52" rx="8" ry="13" fill="#ffd36e"/>
+    <ellipse cx="30" cy="57" rx="3.6" ry="7" fill="#fff4c4"/>
+    <rect x="12" y="73" width="36" height="8" rx="2" fill="#2a2018"/>
+    <path d="M30 81v9" stroke="currentColor" stroke-width="3" fill="none"/>
+  </symbol>
+</svg>
+
+<div id="intro" role="dialog" aria-label="Ghost Tales">
+  <div class="intro-in">
+    <svg class="lantern" aria-hidden="true"><use href="#lantern"/></svg>
+    <h2>Ghost Tales</h2>
+    <p>ভূতের কথা</p>
+    <p>Learn English through ghost stories. Everything runs on your own computer.<br>ভূতের গল্প শুনে শুনে ইংরেজি শিখুন।</p>
+    <button id="light" type="button" onclick="document.getElementById('intro').classList.add('gone')">Light the lantern / লণ্ঠন জ্বালান</button><br>
+    <button id="skip" class="linkish" type="button" onclick="document.getElementById('intro').classList.add('gone')">Skip / এড়িয়ে যান</button>
+  </div>
+</div>
+
+<div id="scene" aria-hidden="true">
+  <div class="stage" id="stage">
+    <div class="layer" data-d="6"><div class="moon"></div><svg id="stars"></svg></div>
+    <div class="layer mid" data-d="16">
+      <svg id="sc-bamboo" class="sil" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice"></svg>
+      <svg id="sc-mansion" class="sil" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice">
+        <rect x="430" y="270" width="740" height="230"/><rect x="690" y="190" width="220" height="90"/>
+        <path d="M670 190 800 110 930 190z"/><rect x="780" y="70" width="40" height="45"/><path d="M770 72 800 40 830 72z"/>
+        <rect x="400" y="300" width="40" height="200"/><rect x="1160" y="300" width="40" height="200"/>
+        <path d="M120 500V330m0 60-55-60m55 30 70-50m-70 90 50-40" stroke="#000" stroke-width="10" fill="none" style="stroke:var(--sil)"/>
+        <rect class="win" x="480" y="310" width="34" height="56"/><rect class="win" x="560" y="310" width="34" height="56"/>
+        <rect class="win" x="1010" y="310" width="34" height="56"/><rect class="win" x="1090" y="310" width="34" height="56"/>
+        <rect class="win" x="785" y="215" width="30" height="48" style="animation-delay:-1s"/><rect class="win" x="620" y="400" width="30" height="40" style="animation-delay:-2s"/>
+      </svg>
+      <svg id="sc-ghat" class="sil" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice">
+        <path d="M0 500V300h160v30h140v30h140v30h140v30h140v30h100v50z"/>
+        <path d="M1180 500V250c-60 0-110-40-100-90 60-30 120 10 130 40 30-50 120-50 150 0 50 0 90 40 60 90-30 20-60 10-90 30V500z"/>
+        <path d="M720 420q130 30 260 0l-30 30q-100 14-200 0z"/><path d="M850 420V340l50 70z" opacity=".9"/>
+        <rect x="610" y="300" width="8" height="130"/><circle class="win" cx="614" cy="296" r="9"/>
+        <path class="water" d="M640 470h200M720 485h260M520 455h120M940 465h200"/>
+      </svg>
+      <svg id="sc-station" class="sil" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice">
+        <rect x="0" y="430" width="1600" height="70"/><path d="M200 300h1000v26H200z"/>
+        <rect x="240" y="326" width="14" height="104"/><rect x="520" y="326" width="14" height="104"/><rect x="800" y="326" width="14" height="104"/><rect x="1080" y="326" width="14" height="104"/>
+        <rect x="1300" y="180" width="26" height="250"/><rect x="1260" y="150" width="110" height="40"/>
+        <path d="M80 430V210m-30 0h60" stroke="#000" stroke-width="8" fill="none" style="stroke:var(--sil)"/>
+        <circle class="win" cx="380" cy="344" r="12"/><circle class="win" cx="660" cy="344" r="12" style="animation-delay:-1.4s"/><circle class="win" cx="940" cy="344" r="12" style="animation-delay:-.6s"/>
+        <path d="M0 462h1600M0 480h1600" stroke="#000" stroke-width="3" fill="none" style="stroke:var(--moon);stroke-opacity:.18"/>
+      </svg>
+      <svg id="sc-school" class="sil" viewBox="0 0 1600 500" preserveAspectRatio="xMidYMax slice">
+        <rect x="380" y="320" width="760" height="180"/><path d="M350 320 400 270h680l50 50z"/>
+        <rect x="720" y="210" width="80" height="62"/><path d="M706 212 760 160l54 52z"/>
+        <path d="M200 500V300m0 0c-50-10-90 10-110 40m110-40c40-30 90-20 110 10m-110-10c-10-40-60-60-100-50m100 50c20-45 70-60 105-45" stroke="#000" stroke-width="9" fill="none" style="stroke:var(--sil)"/>
+        <path d="M1280 500V310m0 0c-40-10-80 10-100 35m100-35c40-25 85-15 105 15" stroke="#000" stroke-width="9" fill="none" style="stroke:var(--sil)"/>
+        <rect class="win" x="450" y="350" width="46" height="60"/><rect class="win" x="560" y="350" width="46" height="60" style="animation-delay:-1s"/>
+        <rect class="win" x="910" y="350" width="46" height="60" style="animation-delay:-2s"/><rect class="win" x="1020" y="350" width="46" height="60"/>
+        <rect x="738" y="400" width="44" height="100" style="fill:var(--sky1)"/>
+      </svg>
+    </div>
+    <canvas id="fx"></canvas>
+    <div class="layer near" data-d="34"><svg id="grass" viewBox="0 0 1600 200" preserveAspectRatio="xMidYMax slice"><g></g><g></g><g></g></svg></div>
+    <div class="vignette"></div>
+    <div class="lampglow"></div>
+  </div>
+</div>
+
+<div class="toolbar" role="group" aria-label="Display and sound options">
+  <button id="motionbtn" type="button" aria-pressed="true" aria-label="Toggle motion">Motion: on</button>
+</div>
+
+<main class="wrap">
+  <div class="head">
+    <svg class="lantern" aria-hidden="true"><use href="#lantern"/></svg>
+    <h1>Ghost <span>Tales</span> <small>ভূতের কথা</small></h1>
+  </div>
   <p class="sub">ভূতের গল্প শুনে শুনে ইংরেজি শিখুন। মুক্ত AI মডেল আপনার নিজের কম্পিউটারেই গল্প বলে।<br>
   <span class="hint">Learn English through ghost stories. An open-weight model runs on your own machine.</span></p>
   <span id="status" class="badge">সংযোগ যাচাই হচ্ছে... / Checking...</span>
@@ -91,12 +262,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
   </div>
 
   <div class="card">
-    <div id="progress">এখানে গল্প আসবে... / Your story appears here...</div>
+    <div class="prog"><span class="orb" id="orb" aria-hidden="true"></span><div id="progress" aria-live="polite">এখানে গল্প আসবে... / Your story appears here...</div></div>
     <div id="rows"></div>
   </div>
-  <p class="hint">সব লেখা আপনার কম্পিউটারেই তৈরি হয়। কোনো তথ্য বাইরে যায় না। / Everything is generated locally. Nothing leaves your machine.<br>
+  <p class="foot">গল্প লেখা ও অনুবাদ আপনার নিজের কম্পিউটারেই হয়। / Story writing and translation happen on your own computer.<br>
+  শব্দ প্রভাব আপনার browser-এই তৈরি হয়। / Sound effects are synthesized in your browser.<br>
   ছোট মডেলের অনুবাদে ভুল থাকতে পারে। / Translations by small models may contain mistakes.</p>
-</div>
+</main>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -296,6 +468,160 @@ $("copy").addEventListener("click", async () => {
 if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = updateVoiceHint; }
 loadModels();
 updateVoiceHint();
+</script>
+<script>
+/* ---------- scene, motion, intro (visual only: failures here never affect story generation) ---------- */
+(function () {
+  const $ = id => document.getElementById(id);
+  const body = document.body;
+  const KEYS = ["bamboo", "mansion", "ghat", "station", "school"];
+  let motion = true;
+  try { motion = !(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches); } catch (e) {}
+  let tx = 0, ty = 0, px = 0, py = 0;
+
+  function rng(seed) { return function () { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  /* static art: stars, bamboo, foreground grass */
+  try {
+    const r = rng(7);
+    let s = "";
+    for (let i = 0; i < 50; i++) s += '<circle cx="' + (r() * 100).toFixed(1) + '%" cy="' + (r() * 55).toFixed(1) + '%" r="' + (0.6 + r() * 1.3).toFixed(1) + '" style="animation-delay:-' + (r() * 4).toFixed(1) + 's"/>';
+    $("stars").innerHTML = s;
+    let b = "";
+    for (let i = 0; i < 26; i++) {
+      const x = r() * 1600, w = 7 + r() * 9, top = 20 + r() * 190;
+      b += '<rect x="' + x.toFixed(0) + '" y="' + top.toFixed(0) + '" width="' + w.toFixed(0) + '" height="' + (500 - top).toFixed(0) + '" rx="3"/>';
+      for (let y = top + 45; y < 480; y += 58) b += '<rect x="' + (x - 2).toFixed(0) + '" y="' + y.toFixed(0) + '" width="' + (w + 4).toFixed(0) + '" height="4"/>';
+      for (let k = 0; k < 3; k++) {
+        const ly = top + 20 + r() * 150, dir = r() < .5 ? -1 : 1;
+        b += '<path d="M' + x.toFixed(0) + ' ' + ly.toFixed(0) + ' q' + (dir * 45) + ' -22 ' + (dir * 90) + ' 6 q' + (dir * -45) + ' 0 ' + (dir * -90) + ' -6z"/>';
+      }
+    }
+    $("sc-bamboo").innerHTML = b;
+    const gs = $("grass").querySelectorAll("g");
+    gs.forEach(g => {
+      let p = "";
+      for (let i = 0; i < 24; i++) {
+        const x = r() * 1600, h = 40 + r() * 110, bend = (r() - .5) * 40;
+        p += '<path d="M' + x.toFixed(0) + ' 200Q' + (x + bend / 2).toFixed(0) + ' ' + (200 - h / 2).toFixed(0) + ' ' + (x + bend).toFixed(0) + ' ' + (200 - h).toFixed(0) + 'L' + (x + 7).toFixed(0) + ' 200z"/>';
+      }
+      g.innerHTML = p;
+    });
+  } catch (e) { console.warn("scene art failed", e); }
+
+  /* fog + particles (canvas, half resolution, at most 6 fog blobs + 36 particles) */
+  const cv = $("fx");
+  let cx = null, W = 2, H = 2, fogSprite = null, flySprite = null, fog = [], parts = [];
+  const SC = 0.5, NPART = 36;
+  const pr = rng(99);
+  function sprite(size, rgb, a0) {
+    const c = document.createElement("canvas"); c.width = c.height = size;
+    const g = c.getContext("2d"), h = size / 2, gr = g.createRadialGradient(h, h, 0, h, h, h);
+    gr.addColorStop(0, "rgba(" + rgb + "," + a0 + ")"); gr.addColorStop(1, "rgba(" + rgb + ",0)");
+    g.fillStyle = gr; g.fillRect(0, 0, size, size); return c;
+  }
+  function resize() { if (!cx) return; W = cv.width = Math.max(2, Math.floor(innerWidth * SC)); H = cv.height = Math.max(2, Math.floor(innerHeight * SC)); }
+  function initFx() {
+    if (!cx) return;
+    const memory = body.dataset.mood === "memory";
+    fogSprite = sprite(128, memory ? "255,190,120" : "150,195,205", 0.9);
+    flySprite = sprite(32, "200,255,140", 1);
+    fog = [];
+    for (let i = 0; i < 6; i++) fog.push({ x: pr() * W, y: H * (0.5 + pr() * 0.5), s: W * (0.5 + pr() * 0.5), v: (pr() < .5 ? -1 : 1) * (4 + pr() * 9) * SC, a: 0.08 + pr() * 0.09 });
+    parts = [];
+    for (let i = 0; i < NPART; i++) {
+      parts.push(memory
+        ? { x: pr() * W, y: pr() * H, vy: (12 + pr() * 16) * SC, vx: (pr() - .5) * 10 * SC, rot: pr() * 6.28, vr: (pr() - .5) * 2, s: (3 + pr() * 3) * SC * 2, ph: pr() * 6.28, c: pr() < .5 ? "#ffb000" : "#ff8a00" }
+        : { x: pr() * W, y: H * (0.3 + pr() * 0.7), vx: (pr() - .5) * 14 * SC, vy: (pr() - .5) * 8 * SC, ph: pr() * 6.28, sp: 0.8 + pr() * 1.4 });
+    }
+  }
+  function draw(t, dt) {
+    cx.clearRect(0, 0, W, H);
+    cx.globalCompositeOperation = "source-over";
+    for (const f of fog) {
+      f.x += f.v * dt; if (f.x < -f.s) f.x = W + f.s; if (f.x > W + f.s) f.x = -f.s;
+      cx.globalAlpha = f.a; cx.drawImage(fogSprite, f.x - f.s / 2, f.y - f.s / 4, f.s, f.s / 2);
+    }
+    const memory = body.dataset.mood === "memory";
+    for (const p of parts) {
+      if (memory) {
+        p.y += p.vy * dt; p.x += (p.vx + Math.sin(t / 900 + p.ph) * 8 * SC) * dt; p.rot += p.vr * dt;
+        if (p.y > H + 10) { p.y = -10; p.x = pr() * W; }
+        cx.globalAlpha = 0.85; cx.fillStyle = p.c;
+        cx.save(); cx.translate(p.x, p.y); cx.rotate(p.rot); cx.beginPath(); cx.ellipse(0, 0, p.s, p.s * 0.55, 0, 0, 6.283); cx.fill(); cx.restore();
+      } else {
+        p.x += (p.vx + Math.sin(t / 1300 + p.ph) * 6 * SC) * dt; p.y += (p.vy + Math.cos(t / 1700 + p.ph) * 5 * SC) * dt;
+        if (p.x < 0) p.x = W; if (p.x > W) p.x = 0; if (p.y < H * .2) p.y = H * .9; if (p.y > H) p.y = H * .25;
+        cx.globalAlpha = 0.25 + 0.75 * Math.max(0, Math.sin(t / 1000 * p.sp + p.ph));
+        cx.drawImage(flySprite, p.x - 8, p.y - 8, 16, 16);
+      }
+    }
+    cx.globalAlpha = 1;
+  }
+
+  /* loop: requestAnimationFrame, paused when hidden, ~30 fps while a model request runs */
+  const layers = Array.from(document.querySelectorAll(".layer"));
+  const stage = $("stage");
+  let raf = 0, last = 0;
+  function frame(t) {
+    raf = 0;
+    if (!motion || document.hidden) return;
+    const busy = $("go").disabled;
+    if (t - last < (busy ? 33 : 16) - 1) { raf = requestAnimationFrame(frame); return; }
+    const dt = Math.min(0.1, (t - last) / 1000); last = t;
+    px += (tx - px) * 0.06; py += (ty - py) * 0.06;
+    stage.style.transform = "rotateX(" + (-py * 4).toFixed(2) + "deg) rotateY(" + (px * 4).toFixed(2) + "deg)";
+    for (const l of layers) { const d = +l.dataset.d; l.style.transform = "translate3d(" + (-px * d).toFixed(1) + "px," + (-py * d * .6).toFixed(1) + "px,0)"; }
+    if (cx) draw(t, dt);
+    raf = requestAnimationFrame(frame);
+  }
+  function start() { if (!raf && motion && !document.hidden) { last = performance.now(); raf = requestAnimationFrame(frame); } }
+  function setMotion(v) {
+    motion = v; body.classList.toggle("nomotion", !v);
+    const b = $("motionbtn"); b.setAttribute("aria-pressed", String(v)); b.textContent = "Motion: " + (v ? "on" : "off");
+    if (v) { start(); } else {
+      if (raf) cancelAnimationFrame(raf); raf = 0; tx = ty = px = py = 0;
+      stage.style.transform = ""; layers.forEach(l => l.style.transform = "");
+      document.querySelectorAll(".sent").forEach(s => { s.style.setProperty("--rx", "0deg"); s.style.setProperty("--ry", "0deg"); });
+    }
+  }
+
+  function applyScene() {
+    const i = $("setting").selectedIndex;
+    body.dataset.setting = KEYS[i < 0 ? 0 : i] || "bamboo";
+    const mood = $("mood").value === "memory" ? "memory" : "spooky";
+    if (body.dataset.mood !== mood) { body.dataset.mood = mood; initFx(); } else body.dataset.mood = mood;
+  }
+
+  try {
+    cx = cv.getContext("2d");
+    resize(); window.addEventListener("resize", resize);
+  } catch (e) { cx = null; console.warn("canvas unavailable", e); }
+  try { applyScene(); initFx(); } catch (e) { console.warn("scene init failed", e); }
+  try {
+    $("setting").addEventListener("change", applyScene);
+    $("mood").addEventListener("change", applyScene);
+    $("motionbtn").addEventListener("click", () => setMotion(!motion));
+    window.addEventListener("pointermove", e => { tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2; }, { passive: true });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) start(); });
+    new MutationObserver(() => body.classList.toggle("busy", $("go").disabled)).observe($("go"), { attributes: true, attributeFilter: ["disabled"] });
+    /* story cards tilt slightly under the pointer (max 3 degrees) */
+    const rows = $("rows");
+    rows.addEventListener("pointermove", e => {
+      if (!motion) return;
+      const c = e.target.closest && e.target.closest(".sent"); if (!c) return;
+      const b = c.getBoundingClientRect();
+      c.style.setProperty("--ry", (((e.clientX - b.left) / b.width - 0.5) * 3).toFixed(2) + "deg");
+      c.style.setProperty("--rx", ((0.5 - (e.clientY - b.top) / b.height) * 3).toFixed(2) + "deg");
+    });
+    rows.addEventListener("pointerout", e => {
+      const c = e.target.closest && e.target.closest(".sent"); if (!c) return;
+      c.style.setProperty("--rx", "0deg"); c.style.setProperty("--ry", "0deg");
+    });
+    document.addEventListener("keydown", e => { if (e.key === "Escape") $("intro").classList.add("gone"); });
+  } catch (e) { console.warn("scene events failed", e); }
+  try { setMotion(motion); } catch (e) { console.warn(e); }
+})();
 </script>
 </body>
 </html>
