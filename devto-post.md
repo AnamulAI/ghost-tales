@@ -45,7 +45,7 @@ To run it: `ollama pull gemma4:12b`, then `python3 -m http.server 8000` in the f
 
 The page is a haunted storybook by lamplight. You light a lantern to enter. Behind the text is a layered night scene: a moon, silhouettes that change with the place you pick (bamboo grove, old mansion, river ghat, railway station, village school), drifting fog and foreground grass. The layers shift a little as you move the mouse. The mood changes the palette: indigo and teal with fireflies for spooky, warm amber with floating petals for a memory ghost. The sentence being read aloud glows like candlelight.
 
-Sound is synthesized in the browser with the Web Audio API. There are no audio files. Each place has a quiet ambient bed, such as crickets, wind, water, a distant train or light rain. Short effects, like a whisper, footsteps, a bell or a heartbeat, are triggered by words in the sentence being read. Sound is off by default, has a volume slider, and starts only after a click. Motion can be switched off too, and the page respects the reduced-motion setting.
+Sound is synthesized in the browser with the Web Audio API. There are no audio files. Each place has a quiet ambient bed, such as crickets, wind, water, a distant train or light rain. Short effects, like a whisper, footsteps, a bell or a heartbeat, are triggered by words in the sentence being read. Sound is off by default and stays off until you press the Sound button. Lighting the lantern or skipping the intro does not turn it on. There is also a volume slider. Motion can be switched off too, and the page respects the reduced-motion setting.
 
 The visuals and sound have only been tried on my own Mac, in one browser.
 
