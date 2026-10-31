@@ -266,6 +266,13 @@ body.has-story:not(.busy) .endactions{display:block}
   animation:fade .8s ease-out 3.1s backwards,pulse 2.4s ease-in-out 4s infinite}
 @keyframes pulse{50%{filter:brightness(1.18)}}
 .i-skip{position:absolute;top:14px;right:16px;z-index:2;font-family:var(--mono);font-size:.8rem;color:#b9c5cc;background:transparent;border:1px solid rgba(185,197,204,.4);padding:8px 14px;min-height:44px;cursor:pointer;border-radius:4px}
+#cinema{position:fixed;inset:0;z-index:15;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8vw 6vw;background:rgba(2,4,10,.8)}
+#cinema[hidden]{display:none}
+.cin-en{font-family:var(--serif);font-size:clamp(1.8rem,5vw,3.4rem);line-height:1.35;max-width:22em;color:var(--bone)}
+.cin-bn{font-family:var(--bnfont);font-size:clamp(1.3rem,3.4vw,2.2rem);line-height:1.9;color:var(--signal);margin-top:1em;max-width:26em}
+.cin-en.in,.cin-bn.in{animation:cin 1.2s ease-out}
+.cin-hint{position:absolute;bottom:18px}
+@keyframes cin{from{opacity:0;filter:blur(8px);transform:translateY(14px)}to{opacity:1;filter:blur(0);transform:none}}
 body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!important;transition:none!important}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}#fx{display:none}}
 </style>
@@ -426,6 +433,7 @@ body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!im
       <div class="rowc">
         <span class="bw sec hd"><span class="bb"><button id="play" type="button" disabled>▶ শুনুন / Listen</button></span></span>
         <span class="bw sec hd"><span class="bb"><button id="copy" type="button" disabled>কপি / Copy</button></span></span>
+        <span class="bw sec"><span class="bb"><button id="cinemabtn" type="button"><span class="en-l">Cinema</span> <span class="bn-l">সিনেমা</span></button></span></span>
         <span class="bw sec"><span class="bb"><button id="newstory" type="button"><span class="en-l">New story</span> <span class="bn-l">নতুন গল্প</span></button></span></span>
       </div>
       <div class="rowc">
@@ -443,6 +451,12 @@ body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!im
     <div class="m">Hacktoberfest 2026 · Ghost in the Machine · হ্যাকটোবারফেস্ট ২০২৬ চ্যালেঞ্জের জন্য তৈরি</div>
   </footer>
 </main>
+<div id="cinema" hidden role="dialog" aria-label="Cinema / সিনেমা">
+  <button id="cinemaclose" type="button" class="i-skip">Close (Esc) / বন্ধ</button>
+  <div id="cin-en" class="cin-en" aria-live="polite"></div>
+  <div id="cin-bn" class="cin-bn"></div>
+  <div class="hint cin-hint">→ / Space: next</div>
+</div>
 
 <script>
 const $ = id => document.getElementById(id);
@@ -1150,6 +1164,34 @@ updateVoiceHint();
     }).observe($("progress"), { childList: true, characterData: true, subtree: true });
     new MutationObserver(() => { if ($("go").disabled) step(1); }).observe($("go"), { attributes: true, attributeFilter: ["disabled"] });
   } catch (e) { console.warn("ui glue failed", e); }
+})();
+</script>
+<script>
+/* ---------- cinema mode: the finished story, one large sentence at a time (visual only) ---------- */
+(function () {
+  const $ = id => document.getElementById(id);
+  try {
+    const ov = $("cinema"), en = $("cin-en"), bn = $("cin-bn");
+    let i = 0, timer = 0, open = false;
+    function show() {
+      clearTimeout(timer);
+      if (i >= sentences.length) { close(); return; }
+      en.textContent = sentences[i];
+      const b = $("bn" + i); bn.textContent = b ? b.textContent : "";
+      [en, bn].forEach(el => { el.classList.remove("in"); void el.offsetWidth; el.classList.add("in"); });
+      if (window.__ghostTrigger) window.__ghostTrigger(sentences[i]);
+      timer = setTimeout(() => { i++; show(); }, Math.max(3500, sentences[i].length * 75));
+    }
+    function openC() { if (!sentences.length || $("go").disabled) return; i = 0; open = true; ov.hidden = false; $("cinemaclose").focus(); show(); }
+    function close() { open = false; clearTimeout(timer); ov.hidden = true; $("cinemabtn").focus(); }
+    $("cinemabtn").addEventListener("click", openC);
+    $("cinemaclose").addEventListener("click", close);
+    document.addEventListener("keydown", e => {
+      if (!open) return;
+      if (e.key === "Escape") { e.preventDefault(); close(); }
+      else if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); i++; show(); }
+    });
+  } catch (e) { console.warn("cinema failed", e); }
 })();
 </script>
 </body>
