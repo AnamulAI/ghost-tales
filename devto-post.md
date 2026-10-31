@@ -8,11 +8,11 @@ published: false
 
 ## What I Built
 
-Bhooter Kotha (ভূতের কথা) is a small web app that teaches English through Bengali ghost stories. It runs fully offline on my own laptop.
+Bhooter Kotha (ভূতের কথা) is a small web app that teaches English through Bengali ghost stories. It runs fully offline on my own computer.
 
 You pick a place, like an old zamindar mansion or a river ghat at dusk. You pick a mood: spooky, or a gentle "memory ghost". You can type a name for the hero. Then a local AI model tells a short story in simple English. After that, it translates the story into Bengali, one sentence at a time. The two languages sit side by side.
 
-The ghost in my machine is the model itself. It lives in my laptop, tells stories by lamplight, and never talks to the internet.
+The ghost in my machine is the model itself. It lives in my own computer and tells stories by lamplight. The story writing and translation never leave this computer.
 
 I built it for people like me. I live in Bangladesh. Many learners here want to practice English, but good tools often need accounts, data and a connection. A story you enjoy is easier to remember than a list of words. And a tool that is free, private and offline is easier to trust.
 
@@ -26,7 +26,7 @@ The app has three learning helpers:
 
 - **Side by side:** English on one side, Bengali on the other.
 - **Learn mode:** the English is blurred. You read the Bengali, guess the English, then click to reveal it.
-- **Listen:** the browser reads each sentence aloud with its built-in speech voice.
+- **Listen:** the browser reads each sentence aloud with its built-in speech voices. I have not checked whether the voices on my system are local or online.
 
 Here is one real pair from a story it wrote for me (unedited model output):
 
@@ -35,7 +35,7 @@ Here is one real pair from a story it wrote for me (unedited model output):
 
 ## Code
 
-[[ADD: GitHub repository link]]
+https://github.com/AnamulAI/bhoot-kotha
 
 It is one `index.html` file plus a README. No framework. No build step. No external fonts or scripts. MIT licensed.
 
@@ -63,13 +63,13 @@ A single sentence took about 1.1 to 1.3 seconds on average (0.74 to 2.04 seconds
 
 **Honest limits.**
 
-- Translation mistakes happen. In my three test stories, I spotted a few clear defects: one Bengali line began with a stray Russian word, one had a garbled phrase, and one had a stray Latin letter inside a word. Most lines looked fine to me, but a small model's Bengali needs review. The app says so on the page.
+- Translation mistakes happen. My AI assistant checked the three test stories and found a few clear defects: one Bengali line began with a stray Russian word, one had a garbled phrase, and one had a stray Latin letter inside a word. Most lines looked fine in that check, but a small model's Bengali still needs review by a person. The app says so on the page.
 - Bengali speech needs a Bengali voice installed on your computer. If there is none, the app reads English only.
 - I have not run a user study. I do not know yet how much it helps people learn. I only know it runs, it is quick, and the stories are fun to read.
 
 **What comes next.** I would like to test it with real learners, add a "check my translation" mode, and try more story levels. Reviewing the Bengali with native speakers is first on the list.
 
-AI tools helped build this project. I used an AI coding assistant for code, tests and drafts, and I reviewed and ran the results myself.
+AI tools helped build this project. I used an AI coding assistant for code, tests and drafts.
 
 ## Why Does Open Innovation Matter?
 
