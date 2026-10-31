@@ -1,5 +1,5 @@
 ---
-title: "Bhooter Kotha: Learn English Through Bengali Ghost Stories, Fully Offline with Gemma"
+title: "Ghost Tales: Learn English Through Ghost Stories, Fully Offline with Gemma"
 tags: devchallenge, hf26challenge, ai, opensource
 published: false
 ---
@@ -8,7 +8,7 @@ published: false
 
 ## What I Built
 
-Bhooter Kotha (ভূতের কথা) is a small web app that teaches English through Bengali ghost stories. It runs fully offline on my own computer.
+Ghost Tales (ভূতের কথা in Bengali) is a small web app that teaches English through ghost stories, with Bengali beside every sentence. It runs fully offline on my own computer.
 
 You pick a place, like an old zamindar mansion or a river ghat at dusk. You pick a mood: spooky, or a gentle "memory ghost". You can type a name for the hero. Then a local AI model tells a short story in simple English. After that, it translates the story into Bengali, one sentence at a time. The two languages sit side by side.
 
@@ -35,11 +35,19 @@ Here is one real pair from a story it wrote for me (unedited model output):
 
 ## Code
 
-https://github.com/AnamulAI/bhoot-kotha
+https://github.com/AnamulAI/ghost-tales
 
-It is one `index.html` file plus a README. No framework. No build step. No external fonts or scripts. MIT licensed.
+It is one `index.html` file plus a README (and `index.stable.html`, an earlier plain copy of the page). No framework. No build step. No external fonts or scripts. MIT licensed.
 
 To run it: `ollama pull gemma4:12b`, then `python3 -m http.server 8000` in the folder, and open `http://localhost:8000`.
+
+## The look and the sound
+
+The page is a haunted storybook by lamplight. You light a lantern to enter. Behind the text is a layered night scene: a moon, silhouettes that change with the place you pick (bamboo grove, old mansion, river ghat, railway station, village school), drifting fog and foreground grass. The layers shift a little as you move the mouse. The mood changes the palette: indigo and teal with fireflies for spooky, warm amber with floating petals for a memory ghost. The sentence being read aloud glows like candlelight.
+
+Sound is synthesized in the browser with the Web Audio API. There are no audio files. Each place has a quiet ambient bed, such as crickets, wind, water, a distant train or light rain. Short effects, like a whisper, footsteps, a bell or a heartbeat, are triggered by words in the sentence being read. Sound is off by default, has a volume slider, and starts only after a click. Motion can be switched off too, and the page respects the reduced-motion setting.
+
+The visuals and sound have only been tried on my own Mac, in one browser.
 
 ## How I Built It
 
