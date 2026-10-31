@@ -13,7 +13,7 @@ Tip: a full story takes longer than 60 seconds to generate. Record the whole run
 | 0:32-0:40 | (Sped up) The cards rise one by one and the Bengali fills in. | "Step two: it translates one sentence at a time." | Step 2: translated sentence by sentence. |
 | 0:40-0:47 | Tick **Learn mode**. The English blurs. Click one card to reveal it. | "Learn mode hides the English. I read the Bengali, guess, then click to check." | Learn mode: guess first, then reveal. |
 | 0:47-0:56 | Click **Listen** with sound on. Let two or three sentences play; the card being read glows. | "I can listen to each sentence. The ambient sound and effects follow the story." | Listen, with sound effects that follow the story. |
-| 0:56-1:00 | Scroll to the footer note. | "Free, private and open source. Translations can have mistakes, so it is a practice companion, not a teacher." | Translations may contain mistakes. |
+| 0:56-1:00 | Scroll to the footer note. | "Free and open source. Story writing and translation stay on my computer. Translations can have mistakes, so it is a practice companion, not a teacher." | Translations may contain mistakes. |
 
 ## Before you record
 

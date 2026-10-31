@@ -1,12 +1,12 @@
 # Ghost Tales (ভূতের কথা)
 
-Learn English through ghost stories. A tiny offline app for the Hacktoberfest 2026 "Ghost in the Machine" challenge.
+Learn English through ghost stories. A tiny local-first app for the Hacktoberfest 2026 "Ghost in the Machine" challenge.
 
-A local open-weight model (Gemma, through [Ollama](https://ollama.com)) tells a short ghost story in simple English, then translates it into Bengali sentence by sentence. Learners can read both languages side by side, hide the English to test themselves, and listen to each sentence. Everything runs on your own machine, with no accounts and no data leaving the computer.
+A local open-weight model (Gemma, through [Ollama](https://ollama.com)) tells a short ghost story in simple English, then translates it into Bengali sentence by sentence. Learners can read both languages side by side, hide the English to test themselves, and listen to each sentence. Story writing and translation run on your own machine, with no accounts. The Listen button uses your browser's built-in speech voices, and I have not checked whether those voices run locally on every system.
 
 ## Who it is for
 
-Bengali speakers who want to practice English with stories they actually enjoy, and anyone who would rather keep a language-learning tool private and offline.
+Bengali speakers who want to practice English with stories they actually enjoy, and anyone who would rather keep story writing and translation on their own computer.
 
 ## Run it
 
