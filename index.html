@@ -119,10 +119,12 @@ body.busy .orb{opacity:1;animation:orb .55s ease-in-out infinite alternate}
 .foot{color:var(--muted);font-size:.86rem;background:#00000040;border-radius:12px;padding:10px 14px}
 
 /* toolbar */
-.toolbar{position:fixed;top:10px;right:10px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:calc(100vw - 20px)}
-.toolbar button{padding:6px 12px;font-size:.85rem;background:var(--paper)}
+.toolbar{position:fixed;top:10px;left:10px;right:10px;z-index:6;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end;pointer-events:none}
+.toolbar>*{pointer-events:auto;flex:0 1 auto;min-width:0;max-width:100%}
+.toolbar button{padding:6px 12px;font-size:.85rem;background:var(--paper);white-space:nowrap}
 .toolbar label{display:flex;align-items:center;gap:6px;margin:0;background:var(--paper);padding:4px 10px;border-radius:10px;border:1px solid var(--line);font-size:.8rem;color:var(--ink)}
-.toolbar input[type=range]{width:90px;padding:0;accent-color:var(--glow)}
+.toolbar input[type=range]{width:90px;min-width:50px;flex:1 1 90px;padding:0;accent-color:var(--glow)}
+@media(max-width:640px){.toolbar{justify-content:flex-start}.wrap{padding-top:96px}}
 
 /* intro */
 #intro{position:fixed;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;
