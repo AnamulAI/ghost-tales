@@ -130,6 +130,9 @@ input#name{width:min(100%,320px);padding:11px 14px;border-radius:6px;border:1px 
 input#name::placeholder{font-family:var(--mono);color:var(--mist);opacity:1}
 details.adv{margin:0 0 16px;color:var(--mist)}
 details.adv summary{cursor:pointer;display:inline-block;padding:10px 12px;min-height:44px}
+.voices .vrow{margin-top:12px}
+.voices .vrow>.bw{margin-top:8px;vertical-align:middle}
+[hidden]{display:none!important}
 details.adv select{padding:10px 12px;border-radius:6px;border:1px solid var(--signal);background:var(--night);color:var(--bone);font:inherit;min-height:44px;min-width:220px}
 .actions{display:flex;flex-wrap:wrap;gap:14px;justify-content:center;align-items:center}
 .rowc{display:flex;flex-wrap:wrap;gap:16px;justify-content:center;align-items:center;margin-top:14px}
@@ -389,6 +392,10 @@ body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!im
       <input id="name" placeholder="Rahim" autocomplete="off"></div>
     <details class="adv"><summary><span class="en-l">Advanced</span> <span class="bn-l">উন্নত</span></summary>
       <div><label for="model" class="hint">AI মডেল / Model (local)</label><br><select id="model"><option>gemma4:12b</option></select></div>
+      <div id="voicebox" class="voices">
+        <div class="vrow"><label for="voice-en" class="hint">English voice / ইংরেজি ভয়েস</label><br><select id="voice-en"></select> <span class="bw sec"><span class="bb"><button id="test-en" type="button">Test voice / ভয়েস শুনুন</button></span></span></div>
+        <div class="vrow" id="bnvoicebox"><label for="voice-bn" class="hint">Bengali voice / বাংলা ভয়েস</label><br><select id="voice-bn"></select> <span class="bw sec"><span class="bb"><button id="test-bn" type="button">Test voice / ভয়েস শুনুন</button></span></span></div>
+      </div>
     </details>
     <div class="sr">
       <label for="setting">কোথায় ঘটবে / Setting</label>
@@ -448,6 +455,7 @@ body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!im
     <div>গল্প লেখা ও অনুবাদ আপনার নিজের কম্পিউটারেই হয়। / Story writing and translation happen on your own computer.</div>
     <div>শব্দ প্রভাব আপনার browser-এই তৈরি হয়। / Sound effects are synthesized in your browser.</div>
     <div>ছোট মডেলের অনুবাদে ভুল থাকতে পারে। / Translations by small models may contain mistakes.</div>
+    <div>ভয়েস আপনার কম্পিউটারে ইনস্টল করা সিস্টেম ভয়েস থেকে আসে; মান নির্ভর করে কোন ভয়েস ইনস্টল আছে তার ওপর। / Voices come from your computer's installed system voices; quality depends on which voices you have installed.</div>
     <div class="m">Hacktoberfest 2026 · Ghost in the Machine · হ্যাকটোবারফেস্ট ২০২৬ চ্যালেঞ্জের জন্য তৈরি</div>
   </footer>
 </main>
@@ -706,8 +714,11 @@ function voiceFor(prefix) {
 function say(text, lang) {
   return new Promise(res => {
     const u = new SpeechSynthesisUtterance(text);
-    u.lang = lang; u.rate = 0.9;
-    const v = voiceFor(lang.slice(0, 2)); if (v) u.voice = v;
+    u.lang = lang; u.rate = lang.slice(0, 2) === "bn" ? 0.85 : 0.9;
+    let v = null;
+    try { if (typeof pickedVoice === "function") v = pickedVoice(lang.slice(0, 2)); } catch (e) {}
+    if (!v) v = voiceFor(lang.slice(0, 2));
+    if (v) { try { u.voice = v; } catch (e) {} }
     u.onend = res; u.onerror = res;
     speechSynthesis.speak(u);
   });
@@ -1192,6 +1203,59 @@ updateVoiceHint();
       else if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); i++; show(); }
     });
   } catch (e) { console.warn("cinema failed", e); }
+})();
+</script>
+<script>
+/* ---------- voice picker: uses the system voices already installed (speech only; failures never affect story generation) ---------- */
+/*VOICE-LOGIC-START*/
+function voiceQuality(name) {
+  const n = String(name || "").toLowerCase();
+  return /premium/.test(n) ? 0 : /enhanced/.test(n) ? 1 : /siri/.test(n) ? 2 : /natural/.test(n) ? 3 : 4;
+}
+function voiceLangRank(lang) {
+  const l = String(lang || "").toLowerCase().replace("_", "-");
+  return l === "en-us" ? 0 : l === "en-gb" ? 1 : 2;
+}
+const NOVELTY_VOICES = /^(albert|bad news|bahh|bells|boing|bubbles|cellos|deranged|fred|good news|hysterical|jester|junior|kathy|organ|princess|ralph|superstar|trinoids|whisper|wobble|zarvox)\b/i;
+const NATURAL_VOICES = /^(samantha|daniel|karen|moira|tessa|alex|fiona|serena|oliver|allison|ava|susan|tom|victoria|rishi)\b/i;
+function rankVoices(list, prefix) {
+  const p = prefix.toLowerCase();
+  const nov = v => NOVELTY_VOICES.test(String(v.name)) ? 1 : 0, nat = v => NATURAL_VOICES.test(String(v.name)) ? 0 : 1;
+  return list.filter(v => String(v.lang || "").toLowerCase().replace("_", "-").startsWith(p))
+    .sort((a, b) => voiceQuality(a.name) - voiceQuality(b.name) || nov(a) - nov(b) || voiceLangRank(a.lang) - voiceLangRank(b.lang) || nat(a) - nat(b) || String(a.name).localeCompare(String(b.name)));
+}
+/*VOICE-LOGIC-END*/
+let userVoice = { en: "", bn: "" };
+function pickedVoice(prefix) {
+  try {
+    const sel = document.getElementById("voice-" + prefix);
+    if (!sel || !sel.value) return null;
+    return speechSynthesis.getVoices().find(v => v.voiceURI === sel.value) || null;
+  } catch (e) { return null; }
+}
+(function () {
+  const $ = id => document.getElementById(id);
+  try {
+    if (!window.speechSynthesis) { const b = $("voicebox"); if (b) b.hidden = true; return; }
+    function fill(prefix) {
+      const sel = $("voice-" + prefix), all = speechSynthesis.getVoices();
+      const list = rankVoices(all, prefix);
+      const keep = userVoice[prefix];
+      sel.innerHTML = "";
+      list.forEach(v => { const o = document.createElement("option"); o.value = v.voiceURI; o.textContent = v.name + " (" + v.lang + ")"; sel.appendChild(o); });
+      if (keep && list.some(v => v.voiceURI === keep)) sel.value = keep;   // keep the user's pick
+      else if (list.length) sel.value = list[0].voiceURI;                 // best-ranked default
+      if (prefix === "bn") $("bnvoicebox").hidden = list.length === 0;
+      sel.disabled = list.length === 0;
+      if (!list.length && prefix === "en") { const o = document.createElement("option"); o.textContent = "(no English voice found)"; sel.appendChild(o); }
+    }
+    function populate() { try { fill("en"); fill("bn"); } catch (e) { console.warn("voice list failed", e); } }
+    ["en", "bn"].forEach(p => $("voice-" + p).addEventListener("change", e => { userVoice[p] = e.target.value; }));
+    $("test-en").addEventListener("click", () => { try { stopSpeech(); say("The old house was quiet, but someone was humming in the dark.", "en-US"); } catch (e) { console.warn(e); } });
+    $("test-bn").addEventListener("click", () => { try { stopSpeech(); say("পুরনো বাড়িটা শান্ত ছিল, কিন্তু অন্ধকারে কেউ গুনগুন করছিল।", "bn-BD"); } catch (e) { console.warn(e); } });
+    speechSynthesis.addEventListener("voiceschanged", populate);
+    populate();
+  } catch (e) { console.warn("voice picker failed", e); }
 })();
 </script>
 </body>

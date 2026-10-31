@@ -39,6 +39,7 @@ Bengali speakers who want to practice English with stories they actually enjoy, 
 - The English story streams in and its cards are revealed one at a time, with a short breath before the last line. Translation runs sentence by sentence while the cards appear. If streaming fails, the page falls back to a plain request.
 - The sentence being read aloud glows like candlelight. A cinema mode shows the finished story one large sentence at a time.
 - Sound is synthesized with the Web Audio API: an ambient bed for each setting, and short effects triggered by words in the sentence being read. It is **off by default**, stays off until you press the Sound button, has a volume slider, and never starts before a click.
+- Voice pickers (English and Bengali) under **Advanced** use the system voices installed on your computer, with a "Test voice" button for each. The default English voice is ranked by name (Premium, Enhanced, Siri, Natural first), and classic novelty voices are put last. Quality depends on which voices you have installed.
 - Respects `prefers-reduced-motion`, and has a visible **Motion on/off** toggle. Particles are capped at 36 (plus 6 fog blobs) and the animation slows to about 30 fps while the model is working.
 - `index.stable.html` is the earlier plain version of the page, and `index.next.html` is the same page as `index.html` at the time of the swap.
 
