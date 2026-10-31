@@ -1,4 +1,4 @@
-# Bhooter Kotha: 60-second demo script
+# Ghost Tales: 60-second demo script
 
 Record your screen at about 1080p. Browser at http://localhost:8000, Ollama already running, model already warm (click "Tell the story" once before recording so the first request is not slow). Turn Wi-Fi off if you want to show it is offline.
 
@@ -6,7 +6,7 @@ Tip: the full story takes longer than 60 seconds to generate. Record the whole r
 
 | Time | What to click / show | What to say (voice-over) | English caption |
 |---|---|---|---|
-| 0:00-0:07 | Show the home page. Point at the green "Connected, running locally" badge. | "This is Bhooter Kotha. Ghost stories in English, with Bengali beside them. It runs fully on my laptop." | Bhooter Kotha: learn English through Bengali ghost stories, fully offline. |
+| 0:00-0:07 | Show the home page. Point at the green "Connected, running locally" badge. | "This is Ghost Tales. Ghost stories in English, with Bengali beside them. It runs fully on my laptop." | Ghost Tales: learn English through ghost stories, fully offline. |
 | 0:07-0:14 | Turn Wi-Fi off in the menu bar (optional). Show the model box: gemma4:12b. | "No internet. The model is Gemma, running locally through Ollama." | No internet. Gemma runs locally through Ollama. |
 | 0:14-0:22 | Pick "Old mansion" and "A memory ghost". Type a name. | "I choose a place, a mood, and a name for the hero." | Choose a place, a mood, and a name. |
 | 0:22-0:30 | Click "Tell the story". Show the step 1 progress message. | "Step one: Gemma writes a short story in simple English." | Step 1: Gemma writes the story in simple English. |

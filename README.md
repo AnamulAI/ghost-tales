@@ -1,4 +1,4 @@
-# Bhooter Kotha (ভূতের কথা)
+# Ghost Tales (ভূতের কথা)
 
 Learn English through ghost stories. A tiny offline app for the Hacktoberfest 2026 "Ghost in the Machine" challenge.
 

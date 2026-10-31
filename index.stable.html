@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Ghost Tales | ভূতের কথা</title>
+<style>
+:root{--bg:#0e0b12;--card:#17121f;--ink:#efe6d8;--muted:#a79bb5;--glow:#f2a93b;--line:#2b2236;--ok:#7bd88f;--bad:#ff7b7b;--hl:#3a2a12}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--ink);line-height:1.8;
+  background:radial-gradient(1100px 600px at 50% -10%,#2a1d3b 0,var(--bg) 62%);
+  font-family:"Kohinoor Bangla","Bangla Sangam MN","Noto Sans Bengali",system-ui,sans-serif}
+.wrap{max-width:820px;margin:0 auto;padding:26px 16px 60px}
+h1{font-size:2rem;margin:.2em 0 0}
+h1 span{color:var(--glow)}
+.sub{color:var(--muted);margin:.2em 0 1em}
+.badge{display:inline-block;padding:2px 12px;border:1px solid var(--line);border-radius:99px;font-size:.85rem;color:var(--muted)}
+.badge.ok{color:var(--ok);border-color:#2f5a3a}
+.badge.bad{color:var(--bad);border-color:#5a2f2f}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px;margin:14px 0}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:560px){.grid{grid-template-columns:1fr}}
+label{display:block;font-size:.88rem;color:var(--muted);margin-bottom:4px}
+select,input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line);background:#100c17;color:var(--ink);font:inherit}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+button{cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:700;background:#2b2236;color:var(--ink)}
+#go{background:var(--glow);color:#1b1206}
+button:disabled{opacity:.5;cursor:not-allowed}
+.hint{color:var(--muted);font-size:.86rem}
+.chk{display:flex;gap:6px;align-items:center;color:var(--muted);font-size:.9rem}
+.chk input{width:auto}
+.sent{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:12px;border-radius:12px;border:1px solid transparent;cursor:pointer}
+@media(max-width:560px){.sent{grid-template-columns:1fr}}
+.sent+.sent{margin-top:6px}
+.sent.hl{background:var(--hl);border-color:#6b4a1c}
+.en{font-size:1.02rem}
+.bn{font-size:1.12rem;color:#ffe3b0}
+.bn.wait{color:var(--muted);font-size:.9rem}
+.learn .en:not(.show){filter:blur(7px)}
+#progress{color:var(--muted);font-size:.9rem;min-height:1.4em}
+.flame{display:inline-block;animation:fl 1.6s infinite alternate}
+@keyframes fl{from{opacity:.55}to{opacity:1}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1><span class="flame">🕯️</span> Ghost <span>Tales</span> <small style="font-size:.5em;color:var(--muted)">ভূতের কথা</small></h1>
+  <p class="sub">ভূতের গল্প শুনে শুনে ইংরেজি শিখুন। মুক্ত AI মডেল আপনার নিজের কম্পিউটারেই গল্প বলে।<br>
+  <span class="hint">Learn English through ghost stories. An open-weight model runs on your own machine.</span></p>
+  <span id="status" class="badge">সংযোগ যাচাই হচ্ছে... / Checking...</span>
+
+  <div class="card">
+    <div class="grid">
+      <div>
+        <label for="setting">কোথায় ঘটবে / Setting</label>
+        <select id="setting">
+          <option value="a bamboo grove in a Bengali village at night">গ্রামের বাঁশবন (Bamboo grove)</option>
+          <option value="an old zamindar mansion">পুরোনো জমিদারবাড়ি (Old mansion)</option>
+          <option value="a lonely river ghat at dusk">নদীর নির্জন ঘাট (River ghat)</option>
+          <option value="a railway station at midnight">রেল স্টেশনের শেষ ট্রেন (Last train)</option>
+          <option value="a village school on a rainy night">বর্ষার রাতের স্কুলঘর (Rainy school)</option>
+        </select>
+      </div>
+      <div>
+        <label for="mood">গল্পের ধরন / Mood</label>
+        <select id="mood">
+          <option value="spooky">গা ছমছমে (Spooky)</option>
+          <option value="memory">স্মৃতির ভূত (A memory ghost)</option>
+        </select>
+      </div>
+      <div>
+        <label for="name">চরিত্রের নাম (ঐচ্ছিক) / Name</label>
+        <input id="name" placeholder="Rahim">
+      </div>
+      <div>
+        <label for="model">AI মডেল / Model (local)</label>
+        <select id="model"><option>gemma4:12b</option></select>
+      </div>
+    </div>
+    <div class="row">
+      <button id="go">গল্প শুরু করুন / Tell the story</button>
+      <button id="stop" disabled>থামান / Stop</button>
+      <button id="play" disabled>▶ শুনুন / Listen</button>
+      <button id="copy" disabled>কপি / Copy</button>
+    </div>
+    <div class="row">
+      <label class="chk"><input type="checkbox" id="learn"> শেখার মোড: ইংরেজি ঢাকা থাকবে, ক্লিক করলে খুলবে / Learn mode</label>
+      <label class="chk"><input type="checkbox" id="readbn"> বাংলাও পড়ুন (কণ্ঠ থাকলে) / Read Bengali too</label>
+    </div>
+    <p class="hint" id="voicehint"></p>
+  </div>
+
+  <div class="card">
+    <div id="progress">এখানে গল্প আসবে... / Your story appears here...</div>
+    <div id="rows"></div>
+  </div>
+  <p class="hint">সব লেখা আপনার কম্পিউটারেই তৈরি হয়। কোনো তথ্য বাইরে যায় না। / Everything is generated locally. Nothing leaves your machine.<br>
+  ছোট মডেলের অনুবাদে ভুল থাকতে পারে। / Translations by small models may contain mistakes.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const OLLAMA = "http://localhost:11434";
+let controller = null;
+let sentences = [];
+let speaking = false;
+
+/* ---------- models (local only: cloud models are filtered out) ---------- */
+async function loadModels() {
+  const status = $("status"), sel = $("model");
+  try {
+    const r = await fetch(OLLAMA + "/api/tags");
+    const j = await r.json();
+    let names = (j.models || []).map(m => m.name).filter(n => !/cloud/i.test(n));
+    names.sort((a, b) => rank(a) - rank(b));
+    if (!names.length) {
+      status.textContent = "কোনো লোকাল মডেল নেই। চালান: ollama pull gemma4:12b";
+      status.className = "badge bad";
+      return;
+    }
+    sel.innerHTML = "";
+    names.forEach(n => { const o = document.createElement("option"); o.value = n; o.textContent = n; sel.appendChild(o); });
+    status.textContent = "Ollama সংযুক্ত: মডেল আপনার কম্পিউটারেই চলছে / Connected, running locally";
+    status.className = "badge ok";
+  } catch (e) {
+    status.textContent = "Ollama-র সাথে সংযোগ হচ্ছে না। Ollama চালু আছে কি না দেখুন।";
+    status.className = "badge bad";
+  }
+}
+function rank(n) { return /^gemma4/i.test(n) ? 0 : /^gemma/i.test(n) ? 1 : 2; }
+
+/* ---------- prompts ---------- */
+function englishPrompt() {
+  const setting = $("setting").value, mood = $("mood").value, name = $("name").value.trim();
+  const moodLine = mood === "spooky"
+    ? "Tone: eerie and atmospheric, slow-building dread. No gore, no violence."
+    : "Tone: gentle and bittersweet. The ghost is the lingering memory of someone dearly loved, and the story honors the past.";
+  return [
+    "You are a village storyteller from Bangladesh telling a short story by lamplight.",
+    "Setting: " + setting + ".",
+    name ? "The main character is called " + name + "." : "",
+    moodLine,
+    "Write about 12 short sentences in simple English that an English learner (level A2 to B1) can follow.",
+    "Output only the story text: no title, no headings, no markdown, no notes.",
+    "End with one quiet, memorable closing sentence."
+  ].filter(Boolean).join("\n");
+}
+function translatePrompt(s) {
+  return "Translate this English sentence into natural, simple Bengali written in Bangla script.\n" +
+         "Reply with exactly one line: the Bengali sentence only. No options, no explanation, no romanization, no notes.\n\nSentence: " + s;
+}
+
+/* ---------- helpers ---------- */
+function clean(t) {
+  return (t || "").replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/[*#_`>]+/g, "").replace(/^["'“”]+|["'“”]+$/g, "").trim();
+}
+function splitSentences(t) {
+  const flat = t.replace(/\s+/g, " ").trim();
+  const m = flat.match(/[^.!?]+[.!?]+["”’']?|[^.!?]+$/g) || [];
+  return m.map(s => s.trim()).filter(Boolean).slice(0, 16);
+}
+function callOllama(body) {
+  return fetch(OLLAMA + "/api/generate", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+    signal: controller.signal
+  });
+}
+async function ask(model, prompt, temperature) {
+  const base = { model, prompt, stream: false, keep_alive: "30m", options: { temperature } };
+  // Thinking is switched off: in testing it added about 25 seconds per sentence.
+  let res = await callOllama(Object.assign({}, base, { think: false }));
+  if (res.status === 400) res = await callOllama(base);
+  if (!res.ok) throw new Error("HTTP " + res.status);
+  const j = await res.json();
+  return j.response || "";
+}
+function extractBengali(t) {
+  const lines = clean(t).split("\n").map(l => l.trim()).filter(l => /[ঀ-৿]/.test(l));
+  if (!lines.length) return "";
+  const line = lines[0]
+    .replace(/\([^)]*[A-Za-z][^)]*\)/g, "")
+    .replace(/^(Bengali|Translation|Here is[^:]*)\s*:\s*/i, "");
+  return line.replace(/^["'“”‘’]+|["'“”‘’]+$/g, "").trim();
+}
+function setBusy(b) {
+  $("go").disabled = b; $("stop").disabled = !b;
+  if (b) { $("play").disabled = true; $("copy").disabled = true; }
+}
+
+/* ---------- rendering ---------- */
+function addRow(i, text) {
+  const d = document.createElement("div");
+  d.className = "sent"; d.id = "s" + i;
+  const en = document.createElement("div"); en.className = "en"; en.textContent = text;
+  const bn = document.createElement("div"); bn.className = "bn wait"; bn.id = "bn" + i; bn.textContent = "অনুবাদ হচ্ছে...";
+  d.appendChild(en); d.appendChild(bn);
+  d.addEventListener("click", () => { en.classList.add("show"); speakOne(i); });
+  $("rows").appendChild(d);
+}
+function setBn(i, t) { const el = $("bn" + i); el.textContent = t || "(অনুবাদ পাওয়া যায়নি)"; el.classList.remove("wait"); }
+function highlight(i) {
+  document.querySelectorAll(".sent").forEach(x => x.classList.remove("hl"));
+  if (i >= 0) { const el = $("s" + i); if (el) { el.classList.add("hl"); el.scrollIntoView({ block: "nearest", behavior: "smooth" }); } }
+}
+
+/* ---------- generate ---------- */
+async function generate() {
+  stopSpeech();
+  $("rows").innerHTML = ""; sentences = [];
+  setBusy(true);
+  controller = new AbortController();
+  try {
+    const model = $("model").value;
+    $("progress").textContent = "ধাপ ১/২: ইংরেজি গল্প তৈরি হচ্ছে (একটু সময় লাগবে)...";
+    const eng = await ask(model, englishPrompt(), 0.85);
+    sentences = splitSentences(clean(eng));
+    if (!sentences.length) throw new Error("মডেল কোনো গল্প দেয়নি");
+    sentences.forEach((s, i) => addRow(i, s));
+    for (let i = 0; i < sentences.length; i++) {
+      $("progress").textContent = "ধাপ ২/২: বাংলা অনুবাদ " + (i + 1) + "/" + sentences.length;
+      setBn(i, extractBengali(await ask(model, translatePrompt(sentences[i]), 0.2)));
+    }
+    $("progress").textContent = "সম্পূর্ণ। বাক্যে ক্লিক করলে সেটি শোনা যাবে। / Done. Click a sentence to hear it.";
+  } catch (e) {
+    if (e.name !== "AbortError") {
+      $("progress").textContent = "সমস্যা: " + e.message + "। Ollama চালু আছে কি না এবং মডেলের নাম ঠিক আছে কি না দেখুন।";
+    } else {
+      $("progress").textContent = "থামানো হয়েছে।";
+    }
+  } finally {
+    setBusy(false);
+    const has = sentences.length > 0;
+    $("play").disabled = !has; $("copy").disabled = !has;
+    controller = null;
+  }
+}
+
+/* ---------- speech (browser built-in, works offline if voices are installed) ---------- */
+function voiceFor(prefix) {
+  return (window.speechSynthesis ? speechSynthesis.getVoices() : []).find(v => v.lang.toLowerCase().startsWith(prefix));
+}
+function say(text, lang) {
+  return new Promise(res => {
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = lang; u.rate = 0.9;
+    const v = voiceFor(lang.slice(0, 2)); if (v) u.voice = v;
+    u.onend = res; u.onerror = res;
+    speechSynthesis.speak(u);
+  });
+}
+async function speakOne(i) {
+  if (!window.speechSynthesis) return;
+  stopSpeech();
+  highlight(i);
+  await say(sentences[i], "en-US");
+  highlight(-1);
+}
+async function playAll() {
+  if (!window.speechSynthesis) { $("voicehint").textContent = "এই browser-এ পড়ে শোনানোর সুবিধা নেই।"; return; }
+  if (speaking) { stopSpeech(); return; }
+  speaking = true; $("play").textContent = "■ থামান / Stop";
+  const readBn = $("readbn").checked && !!voiceFor("bn");
+  for (let i = 0; i < sentences.length && speaking; i++) {
+    highlight(i);
+    $("s" + i).querySelector(".en").classList.add("show");
+    await say(sentences[i], "en-US");
+    if (readBn && speaking) { const t = $("bn" + i).textContent; if (t) await say(t, "bn-BD"); }
+  }
+  stopSpeech();
+}
+function stopSpeech() {
+  speaking = false;
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  $("play").textContent = "▶ শুনুন / Listen";
+  highlight(-1);
+}
+function updateVoiceHint() {
+  if (!window.speechSynthesis) return;
+  const hasBn = !!voiceFor("bn");
+  $("voicehint").textContent = hasBn ? "বাংলা কণ্ঠ পাওয়া গেছে।" : "এই কম্পিউটারে বাংলা কণ্ঠ পাওয়া যায়নি, তাই শুধু ইংরেজি পড়া হবে। বাংলা লেখা পর্দায় দেখা যাবে।";
+}
+
+/* ---------- events ---------- */
+$("go").addEventListener("click", generate);
+$("stop").addEventListener("click", () => controller && controller.abort());
+$("play").addEventListener("click", playAll);
+$("learn").addEventListener("change", e => document.body.classList.toggle("learn", e.target.checked));
+$("copy").addEventListener("click", async () => {
+  const text = sentences.map((s, i) => s + "\n" + $("bn" + i).textContent).join("\n\n");
+  try { await navigator.clipboard.writeText(text); $("copy").textContent = "কপি হয়েছে"; }
+  catch (e) { $("copy").textContent = "কপি হয়নি"; }
+  setTimeout(() => $("copy").textContent = "কপি / Copy", 1500);
+});
+if (window.speechSynthesis) { speechSynthesis.onvoiceschanged = updateVoiceHint; }
+loadModels();
+updateVoiceHint();
+</script>
+</body>
+</html>
