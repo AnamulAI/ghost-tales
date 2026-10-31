@@ -26,19 +26,21 @@ Bengali speakers who want to practice English with stories they actually enjoy, 
 
 - `index.html` is the whole app: no framework, no build step, no external fonts or scripts.
 - It lists your installed models from the local Ollama API (`/api/tags`) and hides cloud-hosted ones, so generation stays on your machine.
-- Step 1 writes the story in English (`/api/generate`). Step 2 translates each sentence into Bengali with a separate low-temperature request, which keeps small models more accurate than translating a whole story at once.
+- Step 1 writes the story in English (`/api/generate`, streamed so cards can appear as sentences complete). Step 2 translates each sentence into Bengali with a separate low-temperature request, which keeps small models more accurate than translating a whole story at once.
 - "Listen" uses the browser's built-in speech synthesis. Bengali audio appears only if the computer has a Bengali voice installed.
 
 ## Design
 
-The page is a haunted storybook by lamplight. All of it is drawn and synthesized in the file itself, with no external fonts, images, audio or scripts.
+"Ghost x Machine": a cold night scene lit by one warm candle, with a faint machine grid, monospace labels and cut-corner buttons. Everything is drawn and synthesized in the file itself, with no external fonts, images, audio or scripts.
 
-- A layered scene with depth: moon and stars, silhouettes that change with the setting (bamboo grove, old mansion, river ghat, railway station, village school), foreground grass, and drifting fog. The layers move with the pointer (parallax, rotation limited to about 4 degrees).
-- The mood changes the whole palette: deep indigo and teal with fireflies for "spooky", warm amber with floating marigold petals for "a memory ghost".
-- Story cards rise in one after another, tilt slightly under the pointer, and the sentence being read aloud glows like candlelight.
-- Sound is synthesized with the Web Audio API: an ambient bed for each setting, and short effects triggered by words in the sentence being read (wind, whispers, footsteps, a bell, a heartbeat and so on). It is **off by default**, has a volume slider, and never starts before a click.
+- A staged intro (moon, fog, lantern, title) that you can skip at any moment, then a centered storybook layout.
+- A layered scene with depth: moon and stars, silhouettes that change with the setting (bamboo grove, old mansion, river ghat, railway station, village school), foreground grass, fog, and faint circuit traces. The layers move with the pointer (parallax, rotation limited to about 4 degrees), and a soft "lantern light" follows the pointer on devices with a mouse.
+- Scene tiles and a mood switch replace the plain form. The mood changes the whole palette: deep indigo and teal with fireflies for "spooky", warm amber with floating petals for "a memory ghost".
+- The English story streams in and its cards are revealed one at a time, with a short breath before the last line. Translation runs sentence by sentence while the cards appear. If streaming fails, the page falls back to a plain request.
+- The sentence being read aloud glows like candlelight. A cinema mode shows the finished story one large sentence at a time.
+- Sound is synthesized with the Web Audio API: an ambient bed for each setting, and short effects triggered by words in the sentence being read. It is **off by default**, stays off until you press the Sound button, has a volume slider, and never starts before a click.
 - Respects `prefers-reduced-motion`, and has a visible **Motion on/off** toggle. Particles are capped at 36 (plus 6 fog blobs) and the animation slows to about 30 fps while the model is working.
-- `index.stable.html` is the earlier plain version of the page, kept as a fallback.
+- `index.stable.html` is the earlier plain version of the page, and `index.next.html` is the same page as `index.html` at the time of the swap.
 
 ## Known limits
 
