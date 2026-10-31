@@ -1,22 +1,23 @@
 # Ghost Tales: 60-second demo script
 
-Record your screen at about 1080p. Browser at http://localhost:8000, Ollama already running, model already warm (click "Tell the story" once before recording so the first request is not slow). Turn Wi-Fi off if you want to show it is offline.
+Record your screen at about 1080p. Open http://localhost:8000. Ollama must be running and the model warm: tell one story before recording so the first request is not slow. Set your system volume to a comfortable level, and record system audio if your recorder supports it (the sound is synthesized in the browser, so it is only in the recording if you capture system audio).
 
-Tip: the full story takes longer than 60 seconds to generate. Record the whole run, then speed up the waiting part (about 8x) when editing, or cut to a story you generated earlier.
+Tip: a full story takes longer than 60 seconds to generate. Record the whole run, then speed up the waiting part (about 8x) when editing, or cut to a story you generated earlier.
 
 | Time | What to click / show | What to say (voice-over) | English caption |
 |---|---|---|---|
-| 0:00-0:07 | Show the home page. Point at the green "Connected, running locally" badge. | "This is Ghost Tales. Ghost stories in English, with Bengali beside them. It runs fully on my laptop." | Ghost Tales: learn English through ghost stories, fully offline. |
-| 0:07-0:14 | Turn Wi-Fi off in the menu bar (optional). Show the model box: gemma4:12b. | "No internet. The model is Gemma, running locally through Ollama." | No internet. Gemma runs locally through Ollama. |
-| 0:14-0:22 | Pick "Old mansion" and "A memory ghost". Type a name. | "I choose a place, a mood, and a name for the hero." | Choose a place, a mood, and a name. |
-| 0:22-0:30 | Click "Tell the story". Show the step 1 progress message. | "Step one: Gemma writes a short story in simple English." | Step 1: Gemma writes the story in simple English. |
-| 0:30-0:40 | (Sped up) Bengali lines fill in one by one. Show step 2 progress. | "Step two: it translates one sentence at a time. Short sentences keep a small model more accurate." | Step 2: translated sentence by sentence. |
-| 0:40-0:47 | Tick "Learn mode". English blurs. Click one sentence to reveal it. | "Learn mode hides the English. I read the Bengali, guess, then click to check." | Learn mode: guess first, then click to reveal. |
-| 0:47-0:54 | Click "Listen". Let one or two sentences play. | "I can listen to each sentence, using the browser's own voice." | Listen with the browser's built-in voice. |
-| 0:54-1:00 | Scroll to the footer note. End on the title. | "Free, private, open source. Translations can have mistakes, so it is a practice companion, not a teacher." | Free, private, open source. Translations may contain mistakes. |
+| 0:00-0:08 | The lantern intro. Click **Light the lantern / লণ্ঠন জ্বালান**. | "This is Ghost Tales. English through ghost stories, with Bengali beside every sentence. It runs on my own computer." | Ghost Tales: learn English through ghost stories. |
+| 0:08-0:15 | Move the mouse slowly so the scene shifts. Point at the green "Connected, running locally" badge and the model name. | "The model is Gemma, running locally through Ollama." | Gemma runs locally through Ollama. |
+| 0:15-0:24 | Pick **Old mansion** and **A memory ghost**. The palette turns amber with floating petals. Type a name. | "I choose a place and a mood. The whole scene changes with them." | Choose a place and a mood. |
+| 0:24-0:32 | Click **Sound: off** to turn it on and lower the volume a little. Click **Tell the story**. Show the flame next to the progress text. | "Step one: Gemma writes a short story in simple English." | Step 1: Gemma writes the story. |
+| 0:32-0:40 | (Sped up) The cards rise one by one and the Bengali fills in. | "Step two: it translates one sentence at a time." | Step 2: translated sentence by sentence. |
+| 0:40-0:47 | Tick **Learn mode**. The English blurs. Click one card to reveal it. | "Learn mode hides the English. I read the Bengali, guess, then click to check." | Learn mode: guess first, then reveal. |
+| 0:47-0:56 | Click **Listen** with sound on. Let two or three sentences play; the card being read glows. | "I can listen to each sentence. The ambient sound and effects follow the story." | Listen, with sound effects that follow the story. |
+| 0:56-1:00 | Scroll to the footer note. | "Free, private and open source. Translations can have mistakes, so it is a practice companion, not a teacher." | Translations may contain mistakes. |
 
 ## Before you record
 
 - Close other heavy apps so the model responds quickly.
 - Do not show anything private on screen (other tabs, notifications).
 - If you have no Bengali voice installed, skip the "Read Bengali too" box and say so honestly.
+- If the animation feels heavy while the model runs, press **Motion: off**.
