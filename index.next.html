@@ -69,7 +69,16 @@ body[data-setting="station"] #sc-station,body[data-setting="school"] #sc-school{
 .lampglow{position:absolute;left:50%;top:-8vh;width:70vw;height:50vh;transform:translateX(-50%);pointer-events:none;
   background:radial-gradient(ellipse at 50% 30%,rgba(255,193,90,.16),transparent 62%);animation:lamp 2.6s ease-in-out infinite alternate}
 @keyframes lamp{0%{opacity:.7}35%{opacity:1}60%{opacity:.8}100%{opacity:.95}}
-body.dim .lampglow{opacity:.35;animation:none}
+body.dim .lampglow{opacity:.55;animation:none}
+body.flicker .lampglow{animation:lampfast .09s steps(2) infinite alternate}
+@keyframes lampfast{from{opacity:.3}to{opacity:1}}
+.stagepanel.flash::before{animation:tflash .8s ease-out}
+@keyframes tflash{0%{box-shadow:0 0 26px 6px var(--candle);filter:brightness(2.2)}100%{box-shadow:0 0 10px color-mix(in srgb,var(--signal) 40%,transparent);filter:none}}
+.sent.last .en{animation-duration:2.2s}
+.sent.last{border-color:var(--candle);box-shadow:0 0 24px rgba(255,193,90,.35)}
+.waiting{display:none;position:relative;padding:26px 10px;color:var(--bone)}
+.waiting .lantern{width:46px;height:76px;display:block;margin:0 auto 8px}
+body.busy:not(.has-story) .waiting{display:block}
 body.nomotion #fx{display:none}
 .grid-bg{position:absolute;inset:0;pointer-events:none;opacity:.5;
   background-image:linear-gradient(color-mix(in srgb,var(--signal) 7%,transparent) 1px,transparent 1px),linear-gradient(90deg,color-mix(in srgb,var(--signal) 7%,transparent) 1px,transparent 1px);
@@ -410,6 +419,7 @@ body.nomotion *,body.nomotion *::before,body.nomotion *::after{animation:none!im
 
   <section class="stagepanel" aria-label="Story">
     <div class="empty">এখানে গল্প আসবে... / Your story appears here...</div>
+    <div class="waiting"><svg class="lantern" aria-hidden="true"><use href="#lantern"/></svg><span class="en-l">The lamp is lit. The ghost is thinking.</span><br><span class="bn-l">আলো জ্বলছে, ভূত ভাবছে...</span></div>
     <div id="rows"></div>
     <div class="theend">The End<span>সমাপ্ত</span></div>
     <div class="endactions">
@@ -534,30 +544,131 @@ function addRow(i, text) {
   d.appendChild(en); d.appendChild(bn);
   d.addEventListener("click", () => { en.classList.add("show"); speakOne(i); });
   $("rows").appendChild(d);
+  if (pendingBn[i] !== undefined) setBn(i, pendingBn[i]);
 }
-function setBn(i, t) { const el = $("bn" + i); el.textContent = t || "(অনুবাদ পাওয়া যায়নি)"; el.classList.remove("wait"); }
+function setBn(i, t) { const el = $("bn" + i); if (!el) { pendingBn[i] = t; return; } el.textContent = t || "(অনুবাদ পাওয়া যায়নি)"; el.classList.remove("wait"); }
 function highlight(i) {
   document.querySelectorAll(".sent").forEach(x => x.classList.remove("hl"));
   if (i >= 0) { const el = $("s" + i); if (el) { el.classList.add("hl"); el.scrollIntoView({ block: "nearest", behavior: "smooth" }); } }
 }
 
+/* ---------- streamed, paced story reveal (English only; falls back to the plain request) ---------- */
+let revealRun = 0, revealP = null, pendingBn = {};
+const ABBR = /^(mr|mrs|ms|dr|st|prof|sr|jr|vs|etc)$/i;
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+function takeSentences(buf) {
+  const out = []; let start = 0, m;
+  const re = /[.!?]+["”’')]*(?=\s)/g;
+  while ((m = re.exec(buf))) {
+    const before = buf.slice(start, m.index);
+    const word = (before.match(/([A-Za-z]+)$/) || [])[1] || "";
+    if (m[0] === "." && (ABBR.test(word) || /^[A-Z]$/.test(word))) continue;
+    const end = m.index + m[0].length;
+    const s = buf.slice(start, end).trim(); if (s) out.push(s);
+    start = end;
+  }
+  return { out, rest: buf.slice(start) };
+}
+function gapFor(s) { return s.length < 40 ? 900 : s.length > 70 ? 1500 : 1100; }
+function revealOne(s, i, last) {
+  addRow(i, s);
+  const row = $("s" + i);
+  try {
+    if (last && row) row.classList.add("last");
+    if (window.__ghostTrigger) window.__ghostTrigger(s);
+    const low = s.toLowerCase();
+    if (/\bsuddenly\b/.test(low)) { document.body.classList.add("flicker"); setTimeout(() => document.body.classList.remove("flicker"), 1500); }
+    if (/\b(fog|mist|haze)\b/.test(low)) window.__fogUntil = performance.now() + 4000;
+    const sp = document.querySelector(".stagepanel");
+    if (sp) { sp.classList.remove("flash"); void sp.offsetWidth; sp.classList.add("flash"); }
+    if (row) row.scrollIntoView({ block: "center", behavior: "smooth" });
+  } catch (e) {}
+}
+function trimToRevealed() {
+  revealRun++;
+  document.body.classList.remove("dim");
+  const n = $("rows").children.length;
+  if (sentences.length > n) sentences.length = n;
+}
+async function tellStory(model) {
+  const run = ++revealRun;
+  const all = [], queue = [];
+  let streamDone = false, shown = 0, streamed = false;
+  const push = arr => {
+    for (const raw of arr) {
+      if (all.length >= 16) return;
+      const s = clean(raw.replace(/\s+/g, " "));
+      if (!s) continue;
+      all.push(s); queue.push(s); sentences = all.slice();
+    }
+  };
+  const worker = (async () => {
+    try {
+      while (run === revealRun) {
+        if (queue.length > 1 || (streamDone && queue.length)) {
+          const s = queue.shift();
+          const last = streamDone && queue.length === 0;
+          if (last && shown > 0) { document.body.classList.add("dim"); await sleep(1400); if (run !== revealRun) return; }
+          revealOne(s, shown, last); shown++;
+          document.body.classList.remove("dim");
+          await sleep(last ? 0 : gapFor(s));
+        } else if (streamDone) return;
+        else await sleep(60);
+      }
+    } finally { document.body.classList.remove("dim"); }
+  })();
+  try {
+    const base = { model, prompt: englishPrompt(), stream: true, keep_alive: "30m", options: { temperature: 0.85 } };
+    let res = await callOllama(Object.assign({}, base, { think: false }));
+    if (res.status === 400) res = await callOllama(base);
+    if (!res.ok || !res.body) throw new Error("HTTP " + res.status);
+    const rd = res.body.getReader(), dec = new TextDecoder();
+    let nd = "", buf = "", first = true;
+    const eat = line => {
+      let j; try { j = JSON.parse(line); } catch (e) { return; }
+      if (!j.response) return;
+      if (first) { first = false; if (window.__ghostStep) window.__ghostStep(2); }
+      buf += j.response;
+      const t = takeSentences(buf); buf = t.rest; push(t.out);
+    };
+    for (;;) {
+      const r = await rd.read(); if (r.done) break;
+      nd += dec.decode(r.value, { stream: true });
+      let nl;
+      while ((nl = nd.indexOf("\n")) >= 0) { const line = nd.slice(0, nl).trim(); nd = nd.slice(nl + 1); if (line) eat(line); }
+    }
+    if (nd.trim()) eat(nd.trim());
+    if (buf.trim()) push([buf]);
+    if (!all.length) throw new Error("empty stream");
+    streamed = true;
+  } catch (e) {
+    if (e.name === "AbortError") { revealRun++; throw e; }
+    if (all.length) streamed = true;
+  }
+  if (streamed) { streamDone = true; sentences = all.slice(); revealP = worker; return; }
+  // fallback: the plain, non-streaming request
+  revealRun++; revealP = null;
+  const eng = await ask(model, englishPrompt(), 0.85);
+  sentences = splitSentences(clean(eng));
+  sentences.forEach((s, i) => addRow(i, s));
+}
+
 /* ---------- generate ---------- */
 async function generate() {
   stopSpeech();
-  $("rows").innerHTML = ""; sentences = [];
+  $("rows").innerHTML = ""; sentences = []; pendingBn = {};
   setBusy(true);
   controller = new AbortController();
   try {
     const model = $("model").value;
     $("progress").textContent = "ধাপ ১/২: ইংরেজি গল্প তৈরি হচ্ছে (একটু সময় লাগবে)...";
-    const eng = await ask(model, englishPrompt(), 0.85);
-    sentences = splitSentences(clean(eng));
+    await tellStory(model);
     if (!sentences.length) throw new Error("মডেল কোনো গল্প দেয়নি");
-    sentences.forEach((s, i) => addRow(i, s));
     for (let i = 0; i < sentences.length; i++) {
       $("progress").textContent = "ধাপ ২/২: বাংলা অনুবাদ " + (i + 1) + "/" + sentences.length;
       setBn(i, extractBengali(await ask(model, translatePrompt(sentences[i]), 0.2)));
     }
+    if (revealP) await revealP;
     $("progress").textContent = "সম্পূর্ণ। বাক্যে ক্লিক করলে সেটি শোনা যাবে। / Done. Click a sentence to hear it.";
   } catch (e) {
     if (e.name !== "AbortError") {
@@ -566,6 +677,7 @@ async function generate() {
       $("progress").textContent = "থামানো হয়েছে।";
     }
   } finally {
+    trimToRevealed();
     setBusy(false);
     const has = sentences.length > 0;
     $("play").disabled = !has; $("copy").disabled = !has;
@@ -706,7 +818,7 @@ updateVoiceHint();
     cx.globalCompositeOperation = "source-over";
     for (const f of fog) {
       f.x += f.v * dt; if (f.x < -f.s) f.x = W + f.s; if (f.x > W + f.s) f.x = -f.s;
-      cx.globalAlpha = f.a; cx.drawImage(fogSprite, f.x - f.s / 2, f.y - f.s / 4, f.s, f.s / 2);
+      cx.globalAlpha = f.a * (performance.now() < (window.__fogUntil || 0) ? 2.4 : 1); cx.drawImage(fogSprite, f.x - f.s / 2, f.y - f.s / 4, f.s, f.s / 2);
     }
     const memory = body.dataset.mood === "memory";
     for (const p of parts) {
@@ -739,8 +851,10 @@ updateVoiceHint();
     px += (tx - px) * 0.06; py += (ty - py) * 0.06;
     stage.style.transform = "rotateX(" + (-py * 4).toFixed(2) + "deg) rotateY(" + (px * 4).toFixed(2) + "deg)";
     for (const l of layers) { const d = +l.dataset.d; l.style.transform = "translate3d(" + (-px * d).toFixed(1) + "px," + (-py * d * .6).toFixed(1) + "px,0)"; }
+    try {
     if (title) { title.style.setProperty("--tx", px.toFixed(3)); title.style.setProperty("--ty", py.toFixed(3)); }
     if (lmask) { lmx += (mx - lmx) * 0.15; lmy += (my - lmy) * 0.15; lmask.style.setProperty("--mx", lmx.toFixed(0) + "px"); lmask.style.setProperty("--my", lmy.toFixed(0) + "px"); }
+    } catch (e) {}
     if (cx) draw(t, dt);
     raf = requestAnimationFrame(frame);
   }
@@ -771,7 +885,7 @@ updateVoiceHint();
     $("setting").addEventListener("change", applyScene);
     $("mood").addEventListener("change", applyScene);
     $("motionbtn").addEventListener("click", () => setMotion(!motion));
-    window.addEventListener("pointermove", e => { tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2; mx = e.clientX; my = e.clientY; }, { passive: true });
+    window.addEventListener("pointermove", e => { if (!innerWidth || !innerHeight) return; tx = (e.clientX / innerWidth - 0.5) * 2; ty = (e.clientY / innerHeight - 0.5) * 2; mx = e.clientX; my = e.clientY; }, { passive: true });
     document.addEventListener("visibilitychange", () => { if (!document.hidden) start(); });
     new MutationObserver(() => body.classList.toggle("busy", $("go").disabled)).observe($("go"), { attributes: true, attributeFilter: ["disabled"] });
     /* story cards tilt slightly under the pointer (max 3 degrees) */
@@ -919,6 +1033,7 @@ updateVoiceHint();
     hits.slice(0, 2).forEach(name => { try { FX[name](t); } catch (e) { console.warn("fx failed", name, e); } t += 0.4; });
   }
 
+  window.__ghostTrigger = trigger;
   /* ---------- on / off, volume ---------- */
   function target() { return level * MAXG; }
   function setOn(v) {
@@ -1014,7 +1129,6 @@ updateVoiceHint();
     new MutationObserver(() => {
       body.classList.toggle("has-story", rows.children.length > 0);
       const n = rows.children.length;
-      if (n && body.classList.contains("busy")) step(3);
     }).observe(rows, { childList: true });
 
     /* three-step ritual, driven by the progress text the app already writes */
