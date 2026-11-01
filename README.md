@@ -49,9 +49,15 @@ Bengali speakers who want to practice English with stories they actually enjoy, 
 - Small models can make mistakes in Bengali. Review translations before relying on them for study.
 - Not a replacement for a teacher; it is a fun practice companion.
 
+## Demo narration
+
+The narration in the demo video was generated with ElevenLabs text to speech (model: Eleven v4, voice: Wyman - The Storyteller), using audio tags for tone. ElevenLabs is not used inside the app: story writing and translation stay on the computer.
+
 ## Built with AI assistance
 
 Developed during the Hacktoberfest 2026 Week 4 challenge window, with AI help for code and writing.
+
+Submission snapshot: tag submission-v1. Any later commits are not part of the submission.
 
 ## License
 
